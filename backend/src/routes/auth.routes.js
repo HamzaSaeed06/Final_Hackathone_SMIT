@@ -2,14 +2,15 @@ const express = require('express');
 const { register, login, me, getTechnicians } = require('../controllers/auth.controller');
 const auth = require('../middleware/auth');
 const { requireRole } = require('../middleware/rbac');
+const { authLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
-// Public routes
-router.post('/login', login);
+// Public routes — rate limited: 5 req/min per IP (Redis-backed)
+router.post('/login', authLimiter, login);
 
-// Admin-only routes
-router.post('/register', auth, requireRole('admin'), register);
+// Admin-only routes — also rate limited so brute-force/enumeration is blocked
+router.post('/register', authLimiter, auth, requireRole('admin'), register);
 router.get('/technicians', auth, requireRole('admin'), getTechnicians);
 
 // Auth required

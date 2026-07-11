@@ -5,21 +5,22 @@ const {
   getPublicIssueStatus,
   publicTriageAsset,
 } = require('../controllers/public.controller');
-const { publicGetLimiter, publicPostIssueLimiter } = require('../middleware/rateLimiter');
+const { publicGetLimiter, publicPostIssueLimiter, aiTriageLimiter } = require('../middleware/rateLimiter');
 const upload = require('../middleware/upload');
 
 const router = express.Router();
 
-// GET /api/public/assets/:slug — anonymous view with 30r/15m limit
+// GET /api/public/assets/:slug — anonymous view, 30 req/15 min per IP
 router.get('/assets/:slug', publicGetLimiter, getPublicAssetBySlug);
 
-// POST /api/public/assets/:slug/issues — anonymous reported issue with 10c/10m limit
+// POST /api/public/assets/:slug/issues — 10 req/min per IP (Redis-backed)
 router.post('/assets/:slug/issues', publicPostIssueLimiter, upload.single('evidence'), reportIssueForAsset);
 
-// POST /api/public/assets/:slug/ai-triage — anonymous AI triage helper
-router.post('/assets/:slug/ai-triage', publicPostIssueLimiter, publicTriageAsset);
+// POST /api/public/assets/:slug/ai-triage — 5 req/min per IP (Redis-backed, separate limiter)
+router.post('/assets/:slug/ai-triage', aiTriageLimiter, publicTriageAsset);
 
-// GET /api/public/issues/:issueNumber — check issue status optionally
+// GET /api/public/issues/:issueNumber — check issue status
 router.get('/issues/:issueNumber', publicGetLimiter, getPublicIssueStatus);
 
 module.exports = router;
+
