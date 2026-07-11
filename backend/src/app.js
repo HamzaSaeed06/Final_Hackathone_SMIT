@@ -7,6 +7,7 @@ const errorHandler = require('./middleware/errorHandler');
 const ApiError = require('./utils/apiError');
 const ApiResponse = require('./utils/apiResponse');
 const authRoutes = require('./routes/auth.routes');
+const assetRoutes = require('./routes/asset.routes');
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/assets', assetRoutes);
 
 // Health Check Endpoint
 app.get('/health', (req, res) => {
