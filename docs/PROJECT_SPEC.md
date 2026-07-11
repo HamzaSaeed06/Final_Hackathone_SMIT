@@ -294,8 +294,8 @@ Closed → cannot edit unless Reopened first
 
 ## 15. Progress Tracker (update as you go)
 
-**Current Hour:** 3
-**Completed:** auth + RBAC working, seed admin created, asset CRUD, QR generation, asset list/detail UI, public asset page, public issue reporting, rate limiter stub
+**Current Hour:** 4
+**Completed:** auth + RBAC working, seed admin created, asset CRUD, QR generation, asset list/detail UI, public asset page, public issue reporting, rate limiter stub, AI triage integrated, safety rules, timeout/fallback handling
 **In Progress:** —
 **Blocked/Issue:** —
-**Next Prompt for Agent:** Prompt 05 — AI Issue Triage
+**Next Prompt for Agent:** Prompt 06 — Assignment + Maintenance Workflow

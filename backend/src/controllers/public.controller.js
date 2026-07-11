@@ -6,6 +6,7 @@ const ApiError = require('../utils/apiError');
 const ApiResponse = require('../utils/apiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const cloudinary = require('../config/cloudinary');
+const { analyzeComplaintWithAI } = require('../services/ai.service');
 
 // Helper: generate sequential issueNumber like ISS-0001
 const generateIssueNumber = async () => {
@@ -97,6 +98,17 @@ const reportIssueForAsset = asyncHandler(async (req, res, next) => {
   }
 
   // Create issue
+  let aiSuggestion = null;
+  if (req.body.aiSuggestion) {
+    try {
+      aiSuggestion = typeof req.body.aiSuggestion === 'string'
+        ? JSON.parse(req.body.aiSuggestion)
+        : req.body.aiSuggestion;
+    } catch (err) {
+      console.error('Failed to parse aiSuggestion from public issue reporting:', err.message);
+    }
+  }
+
   const issue = await Issue.create({
     issueNumber,
     asset: asset._id,
@@ -108,6 +120,7 @@ const reportIssueForAsset = asyncHandler(async (req, res, next) => {
     reporterContact: reporterContact || '',
     evidenceUrls,
     status: 'Reported',
+    aiSuggestion,
   });
 
   // Update Asset status to 'Issue Reported'
@@ -142,8 +155,44 @@ const getPublicIssueStatus = asyncHandler(async (req, res, next) => {
   res.status(200).json(new ApiResponse(200, issue, 'Issue status retrieved successfully'));
 });
 
+// POST /api/public/assets/:slug/ai-triage
+const publicTriageAsset = asyncHandler(async (req, res, next) => {
+  const asset = await Asset.findOne({ publicSlug: req.params.slug });
+  if (!asset) {
+    return next(new ApiError(404, 'Asset not found', 'ASSET_NOT_FOUND'));
+  }
+
+  const { complaint } = req.body;
+  if (!complaint) {
+    return next(new ApiError(400, 'complaint is required', 'BAD_REQUEST'));
+  }
+
+  // Fetch recent history logs for context
+  const history = await AssetHistory.find({ asset: asset._id })
+    .sort({ timestamp: -1 })
+    .limit(3);
+  const recentActivity = history.map(h => h.action);
+
+  const assetContext = {
+    name: asset.name,
+    category: asset.category,
+    location: asset.location,
+    condition: asset.condition,
+    status: asset.status,
+    recentActivity,
+  };
+
+  try {
+    const suggestion = await analyzeComplaintWithAI(assetContext, complaint);
+    res.status(200).json(new ApiResponse(200, suggestion, 'AI triage suggestion generated successfully'));
+  } catch (err) {
+    return next(new ApiError(500, err.message || 'AI Triage service failed', 'AI_TRIAGE_FAILED'));
+  }
+});
+
 module.exports = {
   getPublicAssetBySlug,
   reportIssueForAsset,
   getPublicIssueStatus,
+  publicTriageAsset,
 };
