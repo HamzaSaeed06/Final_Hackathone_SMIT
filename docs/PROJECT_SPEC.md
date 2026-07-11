@@ -294,8 +294,8 @@ Closed → cannot edit unless Reopened first
 
 ## 15. Progress Tracker (update as you go)
 
-**Current Hour:** 6 (end)
-**Completed:** auth + RBAC, asset CRUD + QR, public asset page, issue reporting, AI triage, assignment flow, status state machine, maintenance logging, Cloudinary uploads, asset status sync, asset activity history timeline, dashboard KPI metrics telemetry, global search + filter deep wiring, frontend polish (Login page, Navbar with role UX, PrivateRoute auth guard, react-hot-toast across all action handlers, responsive pass done)
+**Current Hour:** 7 (mid)
+**Completed:** auth + RBAC, asset CRUD + QR, public asset page, issue reporting, AI triage, assignment flow, status state machine, maintenance logging, Cloudinary uploads, asset status sync, asset activity history timeline, dashboard KPI metrics telemetry, global search + filter deep wiring, frontend polish, Redis-backed rate limiting on public/auth/AI routes, Docker setup working via docker-compose
 **In Progress:** —
 **Blocked/Issue:** —
-**Next Prompt for Agent:** Prompt 09 — Bonus: Rate Limiting + Redis
+**Next Prompt for Agent:** Prompt 11 — Bonus: Email
