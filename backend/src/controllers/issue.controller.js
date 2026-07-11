@@ -8,6 +8,7 @@ const ApiError = require('../utils/apiError');
 const ApiResponse = require('../utils/apiResponse');
 const asyncHandler = require('../utils/asyncHandler');
 const cloudinary = require('../config/cloudinary');
+const { sendAssignmentEmail, sendResolutionEmail } = require('../services/email.service');
 
 // Strict transition validator
 const VALID_TRANSITIONS = {
@@ -114,6 +115,20 @@ const assignTechnician = asyncHandler(async (req, res, next) => {
       relatedIssue: issue._id,
       metadata: { issueNumber: issue.issueNumber, technician: techUser.name },
     });
+
+    // Trigger assignment notification email asynchronously
+    if (techUser.email) {
+      sendAssignmentEmail(
+        techUser.email,
+        techUser.name,
+        issue.issueNumber,
+        asset.name,
+        asset.location,
+        issue.priority
+      ).catch(err => {
+        console.error('⚠️ Failed to send assignment notification email:', err.message);
+      });
+    }
   }
 
   res.status(200).json(new ApiResponse(200, issue, 'Technician assigned successfully'));
@@ -201,6 +216,18 @@ const updateIssueStatus = asyncHandler(async (req, res, next) => {
       asset.lastServiceDate = new Date();
       if (parsedNextDate) {
         asset.nextServiceDate = parsedNextDate;
+      }
+
+      // Trigger resolution notification email asynchronously to the public reporter
+      if (issue.reporterContact && issue.reporterContact.includes('@')) {
+        sendResolutionEmail(
+          issue.reporterContact,
+          issue.reporterName,
+          issue.issueNumber,
+          asset.name
+        ).catch(err => {
+          console.error('⚠️ Failed to send resolution notification email:', err.message);
+        });
       }
     }
     await asset.save();
