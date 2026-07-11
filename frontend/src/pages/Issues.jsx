@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const STATUS_COLORS = {
   'Reported': 'bg-yellow-950/60 text-yellow-300 border-yellow-800',
   'Assigned': 'bg-blue-950/60 text-blue-300 border-blue-800',
   'Inspection Started': 'bg-indigo-950/50 text-indigo-300 border-indigo-900',
-  'Maintenance In Progress': 'bg-orange-950/60 text-orange-300 border-orange-800',
+  'Maintenance In Progress': 'bg-orange-950/60 text-orange-300 border-orange-870',
   'Waiting for Parts': 'bg-purple-950/60 text-purple-300 border-purple-800',
   'Resolved': 'bg-green-950/60 text-green-300 border-green-800',
   'Closed': 'bg-gray-800 text-gray-400 border-gray-700',
@@ -68,6 +69,7 @@ export default function Issues() {
       setTechnicians(res.data.data || []);
     } catch (e) {
       console.error('Failed to load technicians list:', e);
+      toast.error('Failed to retrieve technicians list');
     }
   };
 
@@ -89,7 +91,9 @@ export default function Issues() {
       });
       setIssues(res.data.data);
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Failed to load issues catalog.');
+      const msg = err.response?.data?.error?.message || 'Failed to load issues catalog.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

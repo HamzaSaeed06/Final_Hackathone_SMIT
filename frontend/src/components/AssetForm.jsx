@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { assetService } from '../services/assetService';
+import toast from 'react-hot-toast';
 
 const CONDITION_OPTIONS = ['Good', 'Fair', 'Poor'];
 const STATUS_OPTIONS = ['Operational', 'Issue Reported', 'Under Inspection', 'Under Maintenance', 'Out of Service', 'Retired'];
@@ -26,12 +27,16 @@ export default function AssetForm({ asset, onClose, onSuccess }) {
     try {
       if (isEdit) {
         await assetService.update(asset._id, data);
+        toast.success('Asset updated successfully.');
       } else {
         await assetService.create(data);
+        toast.success('Asset created successfully.');
       }
       onSuccess();
     } catch (err) {
-      setServerError(err.response?.data?.error?.message || 'Something went wrong');
+      const msg = err.response?.data?.error?.message || 'Something went wrong';
+      toast.error(msg);
+      setServerError(msg);
     } finally {
       setLoading(false);
     }

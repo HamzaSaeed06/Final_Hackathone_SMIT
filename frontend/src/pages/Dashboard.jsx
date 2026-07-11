@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -8,11 +9,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    setIsAdmin(user.role === 'admin');
     fetchStats();
   }, []);
 
@@ -28,7 +26,9 @@ export default function Dashboard() {
       setStats(res.data.data);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error?.message || 'Failed to fetch dashboard metrics.');
+      const msg = err.response?.data?.error?.message || 'Failed to fetch dashboard metrics.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

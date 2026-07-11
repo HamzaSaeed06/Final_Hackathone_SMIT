@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const ISSUE_CATEGORIES = ['HVAC', 'Electrical', 'Plumbing', 'Structural', 'Appliance', 'Other'];
 const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
@@ -80,6 +81,7 @@ export default function ReportIssue() {
 
       const suggestion = res.data.data;
       setAiSuggestion(suggestion);
+      toast.success('AI triage suggestions successfully prefilled!');
 
       // Pre-fill editable fields
       setValue('title', suggestion.title);
@@ -88,10 +90,11 @@ export default function ReportIssue() {
       setPossibleCauses(suggestion.possibleCauses || []);
       setInitialChecks(suggestion.initialChecks || []);
     } catch (err) {
-      setAiError(err.message === 'canceled' || err.code === 'ECONNABORTED'
+      const errMsg = err.message === 'canceled' || err.code === 'ECONNABORTED'
         ? 'AI analysis timed out (10s threshold exceeded). Please fill in the details manually.'
-        : err.response?.data?.error?.message || 'AI Triage service is temporarily offline. Please continue manually.'
-      );
+        : err.response?.data?.error?.message || 'AI Triage service is temporarily offline. Please continue manually.';
+      setAiError(errMsg);
+      toast.error(errMsg);
     } finally {
       setAiLoading(false);
     }
@@ -166,12 +169,15 @@ export default function ReportIssue() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
+      toast.success('Incident issue reported successfully!');
       setSuccess(true);
       setTimeout(() => {
         navigate(`/public/asset/${slug}`);
       }, 2500);
     } catch (err) {
-      setServerError(err.response?.data?.error?.message || 'Failed to submit report. Please try again.');
+      const errorMsg = err.response?.data?.error?.message || 'Failed to submit report. Please try again.';
+      setServerError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const STATUS_LABELS = {
   'Reported': 'Incident Reported',
@@ -132,9 +133,12 @@ export default function IssueDetail() {
         { technicianId: freshId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      toast.success('Technician assigned successfully.');
       fetchIssueDetails();
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Failed to assign technician.');
+      const msg = err.response?.data?.error?.message || 'Failed to assign technician.';
+      toast.error(msg);
+      setError(msg);
     } finally {
       setAssignLoading(false);
     }
@@ -157,9 +161,12 @@ export default function IssueDetail() {
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      toast.success(`Status updated to "${newStatus}".`);
       fetchIssueDetails();
     } catch (err) {
-      setStatusError(err.response?.data?.error?.message || 'Failed to transition issue status.');
+      const msg = err.response?.data?.error?.message || 'Failed to transition issue status.';
+      toast.error(msg);
+      setStatusError(msg);
     } finally {
       setStatusLoading(false);
     }
@@ -218,9 +225,12 @@ export default function IssueDetail() {
       setStartedAt('');
       setCompletedAt('');
 
+      toast.success('Maintenance log saved. Issue marked as Resolved.');
       fetchIssueDetails();
     } catch (err) {
-      setLogError(err.response?.data?.error?.message || 'Failed to save maintenance records.');
+      const msg = err.response?.data?.error?.message || 'Failed to save maintenance records.';
+      toast.error(msg);
+      setLogError(msg);
     } finally {
       setLogLoading(false);
     }

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { assetService } from '../services/assetService';
 import AssetForm from '../components/AssetForm';
+import toast from 'react-hot-toast';
 
 const STATUS_COLORS = {
   'Operational': 'bg-green-900/40 text-green-300 border-green-800',
   'Issue Reported': 'bg-yellow-900/40 text-yellow-300 border-yellow-800',
   'Under Inspection': 'bg-blue-900/40 text-blue-300 border-blue-800',
-  'Under Maintenance': 'bg-orange-900/40 text-orange-300 border-orange-800',
+  'Under Maintenance': 'bg-orange-900/40 text-orange-300 border-orange-880',
   'Out of Service': 'bg-red-900/40 text-red-300 border-red-800',
   'Retired': 'bg-gray-700/40 text-gray-400 border-gray-700',
 };
@@ -35,7 +36,9 @@ export default function AssetDetail() {
       setQrData(qrRes.data.data);
       setHistory(histRes.data.data);
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Failed to load asset');
+      const msg = err.response?.data?.error?.message || 'Failed to load asset';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -45,21 +48,38 @@ export default function AssetDetail() {
 
   const handleCopyLink = async () => {
     if (!qrData?.publicUrl) return;
-    await navigator.clipboard.writeText(qrData.publicUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(qrData.publicUrl);
+      toast.success('Public page URL link copied!');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error('Failed to copy public link to clipboard');
+    }
   };
 
   const handleDownloadQR = () => {
     if (!qrData?.qrCodeUrl) return;
-    const a = document.createElement('a');
-    a.href = qrData.qrCodeUrl;
-    a.download = `${asset?.assetCode}-qr.png`;
-    a.target = '_blank';
-    a.click();
+    try {
+      const a = document.createElement('a');
+      a.href = qrData.qrCodeUrl;
+      a.download = `${asset?.assetCode}-qr.png`;
+      a.target = '_blank';
+      a.click();
+      toast.success('Asset QR Code download started!');
+    } catch (err) {
+      toast.error('Could not download QR image');
+    }
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-400">Loading asset...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center text-gray-500 gap-3">
+        <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs">Loading asset telemetry details...</p>
+      </div>
+    );
+  }
   if (error) return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-red-400">{error}</div>;
   if (!asset) return null;
 
