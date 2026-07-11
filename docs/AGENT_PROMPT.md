@@ -406,3 +406,179 @@ Update Progress Tracker in PROJECT_SPEC.md:
 - Completed: README, API docs, final flow verified, submission-ready
 - Next Prompt for Agent: DONE — ready for submission
 ```
+
+
+Prompt 15 — UI/UX Overhaul: Light/Dark Theme + Advanced Visual Design
+
+Use this once core functionality is stable and tested. This touches every page, so run
+the STRICT REVIEW PROMPT and full manual click-through after this one before moving on.
+
+The current UI works functionally but looks like a generic dark-only admin dashboard
+(hardcoded bg-gray-950, plain indigo accents, no theme system). Redesign it with a
+distinctive visual identity and full light/dark theme support. This is a physical
+asset maintenance platform — ground the design in that world: QR asset tags,
+inspection tickets, technician work orders, maintenance logs, calibration stickers.
+Avoid generic SaaS-dashboard-indigo-on-dark as the whole identity.
+
+DESIGN DIRECTION (follow this token system, don't invent a different one):
+
+Concept: "Inspection Ticket" — inspired by physical shop-floor asset tags and
+work-order tickets. Status badges should feel like stamped tickets (solid fill,
+slightly bold, rounded-sm not fully pill-shaped). Asset codes and issue numbers
+(AST-0001, ISS-0001) get a monospace treatment to feel like printed tag IDs.
+
+Typography:
+- Body/UI text: Inter or a clean grotesk (already have system fonts available, or
+  add via Google Fonts link in index.html)
+- Codes/IDs/technical data (asset codes, issue numbers, timestamps in tables): a
+  monospace face like "JetBrains Mono" or "IBM Plex Mono" — this is the signature
+  detail that makes the product feel technical/precise, use it deliberately for
+  codes only, not body text
+
+Color tokens (define as CSS custom properties in index.css, both light and dark sets):
+
+Light theme ("Daylight"):
+  --bg: #FAFAF7 (warm paper white, not pure white)
+  --surface: #FFFFFF
+  --surface-raised: #F5F4F0
+  --border: #E5E3DC
+  --text-primary: #1C1C1E
+  --text-secondary: #6B6B66
+  --accent: #D97706 (amber-600, safety/caution amber — the signature color)
+  --accent-contrast: #FFFFFF
+  --success: #16A34A
+  --warning: #D97706
+  --danger: #DC2626
+  --critical-bg: #FEF2F2
+
+Dark theme ("Night Shift"):
+  --bg: #14161B (deep charcoal-slate, not pure black)
+  --surface: #1B1E25
+  --surface-raised: #24272F
+  --border: #2E323C
+  --text-primary: #F2F1ED
+  --text-secondary: #9B9B94
+  --accent: #F59E0B (amber-500, brighter for dark bg)
+  --accent-contrast: #14161B
+  --success: #22C55E
+  --warning: #F59E0B
+  --danger: #EF4444
+  --critical-bg: #2A1414
+
+IMPLEMENTATION STEPS:
+
+1. In frontend/src/index.css, since this project uses Tailwind v4 (CSS-first config),
+   add: `@custom-variant dark (&:where(.dark, .dark *));` and define both :root
+   (light values) and .dark (dark values) CSS custom properties from the token list
+   above.
+
+2. Create a theme store: frontend/src/store/themeStore.js using zustand (same pattern
+   as authStore.js already in the project) — holds current theme ('light' | 'dark'),
+   toggle function, persists to localStorage, and applies/removes the 'dark' class on
+   document.documentElement. Default to the user's system preference
+   (prefers-color-scheme) on first load if no saved preference exists.
+
+3. Create frontend/src/components/ThemeToggle.jsx — a clean icon-button toggle (sun/moon
+   icons from lucide-react) that calls the theme store's toggle function. Add it to
+   Navbar.jsx, both desktop and mobile nav.
+
+4. Replace ALL hardcoded Tailwind color classes (bg-gray-950, bg-gray-900, text-gray-400,
+   border-gray-800, bg-indigo-600, etc.) across every file in frontend/src/pages/ and
+   frontend/src/components/ with the CSS variable-based classes (e.g.
+   bg-[var(--bg)], text-[var(--text-primary)], border-[var(--border)],
+   bg-[var(--accent)]) or Tailwind's dark: variant paired with light defaults, so both
+   themes render correctly. Cover specifically: Navbar.jsx, AssetForm.jsx,
+   PrivateRoute.jsx (if it renders anything), Login.jsx, Dashboard.jsx, Assets.jsx,
+   AssetDetail.jsx, Issues.jsx, IssueDetail.jsx, PublicAsset.jsx, ReportIssue.jsx.
+
+5. Update the react-hot-toast styling in App.jsx to use the theme variables instead of
+   the hardcoded '#1f2937' background, so toasts match the active theme.
+
+6. Status badges (asset status, issue status, priority) — restyle as "stamped ticket"
+   badges: solid background using semantic color at reduced opacity, slightly bold text,
+   small rounded corners (rounded-md not rounded-full), uppercase tracking-wide text.
+   Critical priority issues get the --critical-bg background and --danger border to be
+   immediately visually distinct, per the hackathon brief's requirement.
+
+7. Asset codes and issue numbers anywhere they appear (tables, detail pages, badges) —
+   apply the monospace font class consistently.
+
+8. PublicAsset.jsx and ReportIssue.jsx are the pages an evaluator will actually scan via
+   QR on their own phone — give these extra polish and make sure both themes look clean
+   on mobile specifically, this is what gets judged live.
+
+9. Do a self-critique pass: check every page in both light and dark mode, confirm no
+   hardcoded color leaks through (search the codebase for "gray-9", "gray-8", "gray-950"
+   as a final check — none should remain outside the CSS variable definitions
+   themselves), confirm text contrast is readable in both themes, confirm the theme
+   toggle persists across page reloads and navigation.
+
+Do not touch business logic, API calls, or component structure/props — this is a
+visual/styling pass only.
+
+Update Progress Tracker in PROJECT_SPEC.md:
+
+
+Completed: light/dark theme system, full UI/UX visual overhaul
+Next Prompt for Agent: verify email service is actually wired to triggers (assignment/resolution), then AWS deployment
+
+
+
+🧾 FINAL FULL AUDIT PROMPT (use this once, right before submission)
+
+This checks the whole project against the original hackathon PDF, not just your own
+spec — the judges will use the PDF, so this is your last line of defense.
+
+This is the final audit before hackathon submission. Do not be reassuring — I need
+an honest gap report.
+
+Go through the entire codebase (backend and frontend) and check it against every
+requirement below. For each one, mark: DONE / PARTIAL (explain gap) / MISSING.
+
+Core Mandatory Scope:
+- Authentication with Admin and Technician roles
+- Authorization enforced on the backend (not just hidden UI elements)
+- Asset registration with a unique asset code
+- Asset list, details, search, and filters all working
+- Automatic QR generation linked to a secure public asset route
+- QR preview, downloadable QR/label, copyable public link
+- Public issue-reporting page (no login required, safe fields only)
+- Issue assignment and controlled status workflow (invalid transitions blocked)
+- Maintenance record with notes, parts, cost, dates, and evidence
+- Cloudinary (or equivalent) used for image/video evidence
+- Permanent, non-editable asset history timeline
+- AI Issue Triage: structured output, human review before save, timeout/error handling
+- Responsive frontend
+- Working deployment (live link actually loads and functions)
+- README, API documentation, demo credentials all present and accurate
+
+Business Rules:
+- Technician can only update issues assigned to them
+- Resolved issue can be reopened; closed issue can't be edited until reopened
+- Critical issues are visually distinguishable in the UI
+- Issue cannot be resolved without a maintenance note
+- Maintenance cost cannot be negative
+- Next service date cannot be before maintenance completion date
+- Duplicate asset codes are rejected
+- Meaningful actions create history records
+
+Bonus Scope (only mark DONE if genuinely functional and justified, per the brief —
+"an incomplete core product with bonus tech is weaker than a complete product without it"):
+- AWS deployment
+- Docker (containerized client/server, actually runs via docker-compose)
+- GitHub Actions CI/CD (actually runs and passes)
+- Redis (justified use, not decorative)
+- Email notifications (actually sends)
+- Rate limiting (actually blocks excess requests, tested)
+
+Also flag anti-patterns explicitly called out as "weak" in the hackathon brief if you
+spot them:
+- Frontend hiding buttons instead of backend enforcing authorization
+- AI response saved blindly without user review
+- Decorative dashboard charts instead of useful summaries
+- All code dumped in one file instead of proper modules/services/components
+- One giant final commit instead of incremental history
+
+Output format: a table or list, one line per requirement, with DONE/PARTIAL/MISSING
+and a one-line reason. End with a prioritized list of what to fix first given limited
+remaining time.

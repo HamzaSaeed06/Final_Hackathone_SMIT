@@ -6,6 +6,9 @@ import toast from 'react-hot-toast';
 const CONDITION_OPTIONS = ['Good', 'Fair', 'Poor'];
 const STATUS_OPTIONS = ['Operational', 'Issue Reported', 'Under Inspection', 'Under Maintenance', 'Out of Service', 'Retired'];
 
+const labelClass = 'text-[11px] text-[var(--text-secondary)] block uppercase tracking-wider font-semibold mb-1.5';
+const errorClass = 'text-[var(--danger)] text-xs mt-1';
+
 export default function AssetForm({ asset, onClose, onSuccess }) {
   const isEdit = !!asset;
   const [serverError, setServerError] = useState('');
@@ -42,7 +45,6 @@ export default function AssetForm({ asset, onClose, onSuccess }) {
     }
   };
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
@@ -50,69 +52,69 @@ export default function AssetForm({ asset, onClose, onSuccess }) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-xl border border-gray-700 w-full max-w-lg shadow-2xl">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] w-full max-w-lg shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-800">
-          <h2 className="text-lg font-semibold text-white">{isEdit ? 'Edit Asset' : 'Create Asset'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl leading-none">✕</button>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
+          <h2 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">{isEdit ? 'Edit Asset' : 'Register Asset'}</h2>
+          <button onClick={onClose} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-lg leading-none cursor-pointer">&times;</button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           {serverError && (
-            <div className="bg-red-900/30 border border-red-800 text-red-300 rounded-lg p-3 text-sm">{serverError}</div>
+            <div className="bg-[var(--critical-bg)] border border-[var(--danger)] text-[var(--danger)] rounded-lg p-3 text-sm">{serverError}</div>
           )}
 
           <div>
-            <label className="text-sm text-gray-400 block mb-1">Asset Name *</label>
+            <label className={labelClass}>Asset Name *</label>
             <input
               {...register('name', { required: 'Name is required' })}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+              className="input-base"
               placeholder="e.g. HVAC Unit A"
             />
-            {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
+            {errors.name && <p className={errorClass}>{errors.name.message}</p>}
           </div>
 
           <div>
-            <label className="text-sm text-gray-400 block mb-1">Category *</label>
+            <label className={labelClass}>Category *</label>
             <input
               {...register('category', { required: 'Category is required' })}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+              className="input-base"
               placeholder="e.g. HVAC, Electrical, Plumbing"
             />
-            {errors.category && <p className="text-red-400 text-xs mt-1">{errors.category.message}</p>}
+            {errors.category && <p className={errorClass}>{errors.category.message}</p>}
           </div>
 
           <div>
-            <label className="text-sm text-gray-400 block mb-1">Location *</label>
+            <label className={labelClass}>Location *</label>
             <input
               {...register('location', { required: 'Location is required' })}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+              className="input-base"
               placeholder="e.g. Floor 3, Server Room"
             />
-            {errors.location && <p className="text-red-400 text-xs mt-1">{errors.location.message}</p>}
+            {errors.location && <p className={errorClass}>{errors.location.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm text-gray-400 block mb-1">Condition *</label>
+              <label className={labelClass}>Condition *</label>
               <select
                 {...register('condition', { required: 'Condition is required' })}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                className="input-base cursor-pointer"
               >
                 <option value="">Select...</option>
                 {CONDITION_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              {errors.condition && <p className="text-red-400 text-xs mt-1">{errors.condition.message}</p>}
+              {errors.condition && <p className={errorClass}>{errors.condition.message}</p>}
             </div>
 
             {isEdit && (
               <div>
-                <label className="text-sm text-gray-400 block mb-1">Status</label>
+                <label className={labelClass}>Status</label>
                 <select
                   {...register('status')}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="input-base cursor-pointer"
                 >
                   {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -120,18 +122,25 @@ export default function AssetForm({ asset, onClose, onSuccess }) {
             )}
           </div>
 
-          {!isEdit && (
-            <p className="text-gray-500 text-xs">Asset code and QR code will be auto-generated on creation.</p>
-          )}
-          {isEdit && (
-            <p className="text-gray-500 text-xs">⚠ The public slug and QR code will not change when editing.</p>
-          )}
+          <p className="text-[var(--text-secondary)] text-xs">
+            {!isEdit
+              ? 'Asset code and QR code will be auto-generated on creation.'
+              : '⚠ The public slug and QR code will not change when editing.'}
+          </p>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded-lg text-sm font-medium transition-colors">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-[var(--surface-raised)] hover:bg-[var(--border)] text-[var(--text-secondary)] py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer border border-[var(--border)]"
+            >
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-accent flex-1 py-2.5"
+            >
               {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Asset'}
             </button>
           </div>

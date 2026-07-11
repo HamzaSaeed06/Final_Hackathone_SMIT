@@ -5,15 +5,23 @@ import AssetForm from '../components/AssetForm';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['Operational', 'Issue Reported', 'Under Inspection', 'Under Maintenance', 'Out of Service', 'Retired'];
-const CONDITION_COLORS = { Good: 'text-green-400', Fair: 'text-yellow-400', Poor: 'text-red-400' };
-const STATUS_COLORS = {
-  'Operational': 'bg-green-900/40 text-green-300 border-green-800',
-  'Issue Reported': 'bg-yellow-900/40 text-yellow-300 border-yellow-800',
-  'Under Inspection': 'bg-blue-900/40 text-blue-300 border-blue-800',
-  'Under Maintenance': 'bg-orange-900/40 text-orange-300 border-orange-850',
-  'Out of Service': 'bg-red-900/40 text-red-300 border-red-800',
-  'Retired': 'bg-gray-700/40 text-gray-400 border-gray-700',
-};
+
+function AssetStatusBadge({ status }) {
+  const map = {
+    'Operational':      'badge badge-resolved',
+    'Issue Reported':   'badge badge-reported',
+    'Under Inspection': 'badge badge-inspection',
+    'Under Maintenance':'badge badge-maintenance',
+    'Out of Service':   'badge badge-critical',
+    'Retired':          'badge badge-closed',
+  };
+  return <span className={map[status] || 'badge badge-closed'}>{status}</span>;
+}
+
+function ConditionText({ condition }) {
+  const map = { Good: 'text-[var(--success)]', Fair: 'text-[var(--warning)]', Poor: 'text-[var(--danger)]' };
+  return <span className={`font-semibold text-sm ${map[condition] || 'text-[var(--text-secondary)]'}`}>{condition}</span>;
+}
 
 export default function Assets() {
   const navigate = useNavigate();
@@ -64,16 +72,16 @@ export default function Assets() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6">
+    <div className="min-h-screen bg-[var(--bg)] p-4 md:p-6 transition-colors">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Assets</h1>
-          <p className="text-sm text-gray-400 mt-1">{pagination.total} total assets registered</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Assets</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">{pagination.total} total assets registered</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+          className="btn-accent text-xs px-4 py-2"
         >
           + Create Asset
         </button>
@@ -83,15 +91,16 @@ export default function Assets() {
       <div className="flex gap-3 mb-6">
         <input
           type="text"
-          placeholder="Search by name or code..."
+          placeholder="Search by name, code, or location..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+          className="input-base flex-1 font-mono-code"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-100 focus:outline-none focus:border-indigo-500 cursor-pointer text-gray-300"
+          className="input-base w-auto cursor-pointer"
+          style={{ width: 'auto' }}
         >
           <option value="">All Statuses</option>
           {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
@@ -99,48 +108,46 @@ export default function Assets() {
       </div>
 
       {/* Error */}
-      {error && <div className="bg-red-900/30 border border-red-800 text-red-300 rounded-lg p-3 text-sm mb-4">{error}</div>}
+      {error && <div className="bg-[var(--critical-bg)] border border-[var(--danger)] text-[var(--danger)] rounded-lg p-3 text-sm mb-4">{error}</div>}
 
-      {/* Grid or Table */}
+      {/* Content */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-550 select-none">
-          <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3" />
-          <p className="text-xs">Fetching asset catalog registry details...</p>
+        <div className="flex flex-col items-center justify-center py-20 text-[var(--text-secondary)] select-none">
+          <div className="w-8 h-8 border-[3px] border-[var(--accent)] border-t-transparent rounded-full animate-spin mb-3" />
+          <p className="text-xs">Fetching asset registry...</p>
         </div>
       ) : assets.length === 0 ? (
-        <div className="text-center text-gray-500 py-20">No assets found. Create your first asset.</div>
+        <div className="text-center text-[var(--text-secondary)] py-20 border border-dashed border-[var(--border)] rounded-xl">
+          No assets found. Create your first asset.
+        </div>
       ) : (
         <>
-          {/* Desktop Table View */}
-          <div className="overflow-x-auto rounded-xl border border-gray-800 hidden md:block">
+          {/* Desktop Table */}
+          <div className="overflow-x-auto rounded-xl border border-[var(--border)] hidden md:block bg-[var(--surface)]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-900 text-gray-400 text-left">
-                  <th className="px-4 py-3 font-medium">Code</th>
-                  <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">Category</th>
-                  <th className="px-4 py-3 font-medium">Location</th>
-                  <th className="px-4 py-3 font-medium">Condition</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Actions</th>
+                <tr className="bg-[var(--surface-raised)] text-[var(--text-secondary)] text-left">
+                  <th className="px-4 py-3 font-semibold text-[10px] uppercase tracking-wider">Code</th>
+                  <th className="px-4 py-3 font-semibold text-[10px] uppercase tracking-wider">Name</th>
+                  <th className="px-4 py-3 font-semibold text-[10px] uppercase tracking-wider">Category</th>
+                  <th className="px-4 py-3 font-semibold text-[10px] uppercase tracking-wider">Location</th>
+                  <th className="px-4 py-3 font-semibold text-[10px] uppercase tracking-wider">Condition</th>
+                  <th className="px-4 py-3 font-semibold text-[10px] uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 font-semibold text-[10px] uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
+              <tbody className="divide-y divide-[var(--border)]">
                 {assets.map((asset) => (
-                  <tr key={asset._id} className="bg-gray-900/50 hover:bg-gray-800/50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-indigo-400">{asset.assetCode}</td>
-                    <td className="px-4 py-3 text-white font-medium">{asset.name}</td>
-                    <td className="px-4 py-3 text-gray-300">{asset.category}</td>
-                    <td className="px-4 py-3 text-gray-300">{asset.location}</td>
-                    <td className={`px-4 py-3 font-medium ${CONDITION_COLORS[asset.condition]}`}>{asset.condition}</td>
+                  <tr key={asset._id} className="hover:bg-[var(--surface-raised)] transition-colors">
+                    <td className="px-4 py-3 font-mono-code text-[var(--accent)] text-xs">{asset.assetCode}</td>
+                    <td className="px-4 py-3 text-[var(--text-primary)] font-medium">{asset.name}</td>
+                    <td className="px-4 py-3 text-[var(--text-secondary)]">{asset.category}</td>
+                    <td className="px-4 py-3 text-[var(--text-secondary)]">{asset.location}</td>
+                    <td className="px-4 py-3"><ConditionText condition={asset.condition} /></td>
+                    <td className="px-4 py-3"><AssetStatusBadge status={asset.status} /></td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[asset.status] || 'bg-gray-800 text-gray-300'}`}>
-                        {asset.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link to={`/assets/${asset._id}`} className="text-indigo-400 hover:text-indigo-300 text-xs font-medium">
-                        View →
+                      <Link to={`/assets/${asset._id}`} className="text-[var(--accent)] hover:underline text-xs font-medium">
+                        View &rarr;
                       </Link>
                     </td>
                   </tr>
@@ -149,35 +156,33 @@ export default function Assets() {
             </table>
           </div>
 
-          {/* Mobile Grid Cards View */}
-          <div className="grid grid-cols-1 gap-4 md:hidden">
+          {/* Mobile Cards */}
+          <div className="grid grid-cols-1 gap-3 md:hidden">
             {assets.map((asset) => (
               <div
                 key={asset._id}
                 onClick={() => navigate(`/assets/${asset._id}`)}
-                className="bg-gray-900 border border-gray-800 p-4 rounded-xl space-y-3 active:bg-gray-850/80 transition-colors cursor-pointer"
+                className="card p-4 space-y-3 active:bg-[var(--surface-raised)] transition-colors cursor-pointer"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-sm font-semibold text-white">{asset.name}</h3>
-                    <span className="font-mono text-xs text-indigo-400 uppercase mt-0.5 block">{asset.assetCode}</span>
+                    <h3 className="text-sm font-semibold text-[var(--text-primary)]">{asset.name}</h3>
+                    <span className="font-mono-code text-xs text-[var(--accent)] mt-0.5 block">{asset.assetCode}</span>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${STATUS_COLORS[asset.status] || 'bg-gray-800 text-gray-350'}`}>
-                    {asset.status}
-                  </span>
+                  <AssetStatusBadge status={asset.status} />
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-gray-850">
+                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[var(--border)]">
                   <div>
-                    <span className="text-gray-500 block text-[9px] uppercase tracking-wider font-semibold">Category</span>
-                    <span className="text-gray-300">{asset.category}</span>
+                    <span className="text-[var(--text-secondary)] block text-[9px] uppercase tracking-wider font-semibold mb-0.5">Category</span>
+                    <span className="text-[var(--text-primary)]">{asset.category}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500 block text-[9px] uppercase tracking-wider font-semibold">Location</span>
-                    <span className="text-gray-300">{asset.location}</span>
+                    <span className="text-[var(--text-secondary)] block text-[9px] uppercase tracking-wider font-semibold mb-0.5">Location</span>
+                    <span className="text-[var(--text-primary)]">{asset.location}</span>
                   </div>
-                  <div className="col-span-2 pt-1 flex justify-between items-center bg-gray-950/20 px-2 py-1 rounded mt-1 border border-gray-850">
-                    <span className="text-gray-500 text-[10px]">Condition</span>
-                    <span className={`font-semibold text-xs ${CONDITION_COLORS[asset.condition]}`}>{asset.condition}</span>
+                  <div className="col-span-2 flex justify-between items-center border-t border-[var(--border)] pt-2 mt-1">
+                    <span className="text-[var(--text-secondary)] text-[10px]">Condition</span>
+                    <ConditionText condition={asset.condition} />
                   </div>
                 </div>
               </div>
@@ -193,7 +198,11 @@ export default function Assets() {
             <button
               key={p}
               onClick={() => fetchAssets(p)}
-              className={`w-8 h-8 rounded text-xs font-medium ${p === pagination.page ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+              className={`w-8 h-8 rounded-md text-xs font-medium cursor-pointer transition-colors ${
+                p === pagination.page
+                  ? 'bg-[var(--accent)] text-[var(--accent-contrast)]'
+                  : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]'
+              }`}
             >
               {p}
             </button>
@@ -201,7 +210,6 @@ export default function Assets() {
         </div>
       )}
 
-      {/* Create Form Modal */}
       {showForm && (
         <AssetForm onClose={() => setShowForm(false)} onSuccess={handleCreated} />
       )}

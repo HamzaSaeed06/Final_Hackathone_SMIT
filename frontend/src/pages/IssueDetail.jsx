@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -14,23 +14,29 @@ const STATUS_LABELS = {
   'Reopened': 'Issue Reopened',
 };
 
-const STATUS_COLORS = {
-  'Reported': 'bg-yellow-950/65 text-yellow-300 border-yellow-800',
-  'Assigned': 'bg-blue-950/65 text-blue-300 border-blue-800',
-  'Inspection Started': 'bg-indigo-950/65 text-indigo-300 border-indigo-900',
-  'Maintenance In Progress': 'bg-orange-950/65 text-orange-300 border-orange-800',
-  'Waiting for Parts': 'bg-purple-950/65 text-purple-300 border-purple-800',
-  'Resolved': 'bg-green-950/65 text-green-300 border-green-800',
-  'Closed': 'bg-gray-800 text-gray-400 border-gray-700',
-  'Reopened': 'bg-pink-950/65 text-pink-300 border-pink-850',
-};
+function IssueBadge({ status }) {
+  const map = {
+    'Reported':               'badge badge-reported text-xs font-semibold',
+    'Assigned':               'badge badge-assigned text-xs font-semibold',
+    'Inspection Started':     'badge badge-inspection text-xs font-semibold',
+    'Maintenance In Progress':'badge badge-maintenance text-xs font-semibold',
+    'Waiting for Parts':      'badge badge-waiting text-xs font-semibold',
+    'Resolved':               'badge badge-resolved text-xs font-semibold',
+    'Closed':                 'badge badge-closed text-xs font-semibold',
+    'Reopened':               'badge badge-reopened text-xs font-semibold',
+  };
+  return <span className={map[status] || 'badge badge-closed text-xs font-semibold'}>{STATUS_LABELS[status] || status}</span>;
+}
 
-const PRIORITY_COLORS = {
-  'Low': 'bg-gray-800 text-gray-400 border-gray-700',
-  'Medium': 'bg-blue-950/50 text-blue-400 border-blue-900',
-  'High': 'bg-orange-950/50 text-orange-400 border-orange-900',
-  'Critical': 'bg-red-950 text-red-400 border-red-800 shadow-[0_0_15px_rgba(239,68,68,0.25)] animate-pulse font-extrabold',
-};
+function PriorityBadge({ priority }) {
+  const map = {
+    'Low':      'badge badge-low text-xs',
+    'Medium':   'badge badge-medium text-xs',
+    'High':     'badge badge-high text-xs',
+    'Critical': 'badge badge-critical text-xs shadow-[0_0_12px_rgba(var(--danger-rgb),0.35)]',
+  };
+  return <span className={map[priority] || 'badge badge-low text-xs'}>{priority} Priority</span>;
+}
 
 export default function IssueDetail() {
   const { id } = useParams();
@@ -40,21 +46,17 @@ export default function IssueDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Auth roles
   const [_currentUser, setCurrentUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAssignedTech, setIsAssignedTech] = useState(false);
 
-  // Admin technicians dropdown
   const [technicians, setTechnicians] = useState([]);
   const [assigneeId, setAssigneeId] = useState('');
   const [assignLoading, setAssignLoading] = useState(false);
 
-  // Status transitions
   const [statusLoading, setStatusLoading] = useState(false);
   const [statusError, setStatusError] = useState('');
 
-  // Maintenance Log Modal State
   const [showLogModal, setShowLogModal] = useState(false);
   const [logLoading, setLogLoading] = useState(false);
   const [logError, setLogError] = useState('');
@@ -215,7 +217,6 @@ export default function IssueDetail() {
         }
       );
 
-      // Reset
       setShowLogModal(false);
       setInspectionNotes('');
       setWorkPerformed('');
@@ -236,12 +237,14 @@ export default function IssueDetail() {
     }
   };
 
+  const labelClass = 'text-[11px] text-[var(--text-secondary)] block uppercase tracking-wider font-semibold mb-1';
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
-        <div className="text-center text-gray-500">
-          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs">Gathering incident status details...</p>
+      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center p-4 transition-colors">
+        <div className="text-center text-[var(--text-secondary)]">
+          <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs">Gathering incident details...</p>
         </div>
       </div>
     );
@@ -249,10 +252,10 @@ export default function IssueDetail() {
 
   if (error || !issue) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
-        <div className="bg-gray-900 border border-gray-808 rounded-xl p-6 text-center max-w-sm w-full select-none">
-          <p className="text-xs text-red-400 mb-4">{error || 'Incident file not found'}</p>
-          <button onClick={() => navigate('/issues')} className="bg-gray-800 hover:bg-gray-700 text-xs px-4 py-2 rounded-xl text-gray-300">
+      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center p-4 transition-colors">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 text-center max-w-sm w-full select-none">
+          <p className="text-sm font-semibold text-[var(--danger)] mb-4">{error || 'Incident file not found'}</p>
+          <button onClick={() => navigate('/issues')} className="btn-accent px-4 py-2 text-xs rounded-xl">
             Back to Dashboard
           </button>
         </div>
@@ -263,43 +266,37 @@ export default function IssueDetail() {
   const isCritical = issue.priority === 'Critical';
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-205 p-6 font-sans select-none">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] p-4 md:p-6 transition-colors">
       <div className="max-w-4xl mx-auto space-y-6">
         
-        {/* Back navigation */}
-        <div className="flex justify-between items-center">
-          <button onClick={() => navigate('/issues')} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
-            ← Back to Dispatches
+        {/* Back navigation + Status */}
+        <div className="flex justify-between items-center pb-2">
+          <button onClick={() => navigate('/issues')} className="text-xs text-[var(--text-secondary)] hover:text-[var(--accent)] font-semibold transition-colors flex items-center gap-1">
+            &larr; Back to Dispatch Board
           </button>
           
-          {/* Status Indicator */}
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${STATUS_COLORS[issue.status]}`}>
-            Status: {STATUS_LABELS[issue.status] || issue.status}
-          </span>
+          <IssueBadge status={issue.status} />
         </div>
 
-        {/* Issue Card Details */}
-        <div className={`bg-gray-900 border rounded-2xl p-6 shadow-xl space-y-6 ${isCritical ? 'border-red-900 border-2 shadow-[0_0_20px_rgba(239,68,68,0.08)]' : 'border-gray-808'}`}>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        {/* Issue Details Card */}
+        <div className={`card p-6 space-y-6 ${isCritical ? 'border-2 border-[var(--danger)] shadow-[0_0_20px_rgba(var(--danger-rgb),0.08)]' : ''}`}>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-[var(--border)]">
             <div>
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                <span className="font-mono font-black text-gray-400 text-xs uppercase select-text">{issue.issueNumber}</span>
-                <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border ${PRIORITY_COLORS[issue.priority]}`}>
-                  {issue.priority} Priority
-                </span>
+                <span className="font-mono-code font-bold text-[var(--text-secondary)] text-sm uppercase">{issue.issueNumber}</span>
+                <PriorityBadge priority={issue.priority} />
               </div>
-              <h2 className="text-xl font-bold text-white tracking-tight select-text">{issue.title}</h2>
+              <h2 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">{issue.title}</h2>
             </div>
             
-            {/* Admin Assignee Action Box */}
             {isAdmin && (
               <div className="w-full md:w-auto">
-                <label className="text-[10px] text-gray-500 uppercase tracking-widest block font-bold mb-1">Assign Technician</label>
+                <label className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider block font-bold mb-1.5">Assign Technician</label>
                 <select
                   value={assigneeId}
                   onChange={handleAssign}
                   disabled={assignLoading}
-                  className="bg-gray-850 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 w-full md:w-56"
+                  className="input-base text-xs py-2 w-full md:w-56 cursor-pointer"
                 >
                   <option value="">Unassigned</option>
                   {technicians.map(t => <option key={t._id} value={t._id}>{t.name} ({t.email})</option>)}
@@ -308,44 +305,44 @@ export default function IssueDetail() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-800/80">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <h3 className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-2">Linked Asset</h3>
-              <div className="bg-gray-950/60 p-4 border border-gray-900 rounded-xl space-y-2 select-text">
-                <p className="text-xs font-semibold text-white">{issue.asset?.name || 'Asset Deleted'}</p>
-                <p className="text-[11px] text-gray-400 flex gap-2">
-                  <span>Code: <strong className="font-mono text-indigo-400">{issue.asset?.assetCode}</strong></span>
+              <h3 className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-bold mb-2">Linked Asset</h3>
+              <div className="bg-[var(--surface-raised)] p-4 border border-[var(--border)] rounded-xl space-y-1.5">
+                <p className="text-xs font-semibold text-[var(--text-primary)]">{issue.asset?.name || 'Asset Deleted'}</p>
+                <p className="text-[11px] text-[var(--text-secondary)] flex gap-2">
+                  <span>Code: <Link to={`/assets/${issue.asset?._id}`} className="font-mono-code text-[var(--accent)] hover:underline font-semibold">{issue.asset?.assetCode}</Link></span>
                   <span>|</span>
                   <span>Category: <strong>{issue.asset?.category}</strong></span>
                 </p>
-                <p className="text-[11px] text-gray-500">Location: {issue.asset?.location || 'Unknown'}</p>
+                <p className="text-[11px] text-[var(--text-secondary)]">Location: {issue.asset?.location || 'Unknown'}</p>
               </div>
             </div>
 
             <div>
-              <h3 className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-2">Reporter Information</h3>
-              <div className="bg-gray-950/60 p-4 border border-gray-900 rounded-xl space-y-2 select-text">
-                <p className="text-xs text-gray-300">Name: <strong className="text-white">{issue.reporterName}</strong></p>
-                <p className="text-xs text-gray-500">Contact: {issue.reporterContact || <span className="italic">None provided</span>}</p>
-                <p className="text-[10px] text-gray-650">Logged date: {new Date(issue.createdAt).toLocaleString()}</p>
+              <h3 className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-bold mb-2">Reporter Information</h3>
+              <div className="bg-[var(--surface-raised)] p-4 border border-[var(--border)] rounded-xl space-y-1.5">
+                <p className="text-xs text-[var(--text-primary)]">Name: <strong className="font-semibold">{issue.reporterName}</strong></p>
+                <p className="text-xs text-[var(--text-secondary)]">Contact: {issue.reporterContact || <span className="italic text-[var(--text-secondary)]">None provided</span>}</p>
+                <p className="text-[10px] text-[var(--text-secondary)] font-mono-code">Logged: {new Date(issue.createdAt).toLocaleString()}</p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-2 select-text">
-            <h3 className="text-xs text-gray-500 uppercase tracking-wider font-bold">Complaint Details</h3>
-            <p className="bg-gray-950/40 p-4 border border-gray-900 rounded-xl text-xs text-gray-300 font-light leading-6 italic">
+          <div className="space-y-2">
+            <h3 className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-bold">Complaint Description</h3>
+            <p className="bg-[var(--surface-raised)] p-4 border border-[var(--border)] rounded-xl text-xs text-[var(--text-primary)] font-light leading-6 italic">
               &ldquo;{issue.description}&rdquo;
             </p>
           </div>
 
-          {/* Evidence array images */}
+          {/* Evidence photos */}
           {issue.evidenceUrls && issue.evidenceUrls.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-xs text-gray-550 uppercase tracking-wider font-bold">Submitted Evidence Photo</h3>
+              <h3 className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-bold">Logged Evidence Photos</h3>
               <div className="grid grid-cols-2 gap-4">
                 {issue.evidenceUrls.map((url, i) => (
-                  <a key={i} href={url} target="_blank" rel="noreferrer" className="block border border-gray-900 hover:border-gray-800 rounded-xl overflow-hidden cursor-zoom-in">
+                  <a key={i} href={url} target="_blank" rel="noreferrer" className="block border border-[var(--border)] hover:border-[var(--accent)] rounded-xl overflow-hidden cursor-zoom-in shadow-sm transition-colors">
                     <img src={url} alt={`Evidence #${i+1}`} className="w-full h-32 object-cover" />
                   </a>
                 ))}
@@ -353,29 +350,31 @@ export default function IssueDetail() {
             </div>
           )}
 
-          {/* AI Helper suggestions notes if available */}
+          {/* AI triage assist suggestions */}
           {issue.aiSuggestion && (
-            <div className="bg-gray-950/65 border border-indigo-950/70 rounded-xl p-4.5 space-y-3">
-              <div className="flex justify-between items-center">
-                <h4 className="text-xs font-bold text-indigo-400 tracking-wider uppercase">💡 Gemini Triage Assist Logs</h4>
+            <div className="bg-[var(--surface-raised)] border border-[var(--border)] rounded-xl p-4.5 space-y-3">
+              <div className="flex justify-between items-center border-b border-[var(--border)] pb-2">
+                <h4 className="text-[10px] font-bold text-[var(--accent)] tracking-wider uppercase">💡 Gemini AI Triage Logs</h4>
                 {issue.aiSuggestion.wasEdited ? (
-                  <span className="text-[9px] bg-yellow-950/30 text-yellow-400 border border-yellow-800/40 rounded px-1.5 py-0.5">User Edited</span>
+                  <span className="text-[9px] bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] rounded px-1.5 py-0.5">Edited by reporter</span>
                 ) : (
-                  <span className="text-[9px] bg-indigo-950/30 text-indigo-400 border border-indigo-805/40 rounded px-1.5 py-0.5">Matched Suggestion</span>
+                  <span className="text-[9px] bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30 rounded px-1.5 py-0.5">Matched Suggestion</span>
                 )}
               </div>
-              <div className="text-xs space-y-1.5 text-gray-300 font-light select-text">
-                <p><span className="text-gray-500">Triage Summary:</span> {issue.aiSuggestion.title}</p>
+              <div className="text-xs space-y-2 text-[var(--text-primary)] font-light">
+                <p><span className="text-[var(--text-secondary)] uppercase text-[10px] font-semibold mr-1.5">Triage Title:</span> {issue.aiSuggestion.title}</p>
                 <div>
-                  <span className="text-gray-500">Possible Causes:</span>
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {issue.aiSuggestion.possibleCauses.map((c, i) => <span key={i} className="bg-gray-900 text-[10px] text-gray-400 border border-gray-800 rounded px-1.5 py-0.5">{c}</span>)}
+                  <span className="text-[var(--text-secondary)] uppercase text-[10px] font-semibold block mb-1">Possible Causes:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {issue.aiSuggestion.possibleCauses.map((c, i) => (
+                      <span key={i} className="bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] rounded px-2 py-0.5 text-[11px]">{c}</span>
+                    ))}
                   </div>
                 </div>
                 {issue.aiSuggestion.initialChecks && issue.aiSuggestion.initialChecks.length > 0 && (
-                  <div className="pt-1.5">
-                    <span className="text-gray-505 block font-medium mb-1">Recommended Checks:</span>
-                    <ul className="list-disc pl-4 space-y-1 text-gray-450 italic text-[11px]">
+                  <div className="pt-1">
+                    <span className="text-[var(--text-secondary)] uppercase text-[10px] font-semibold block mb-1">Recommended Safety Checks:</span>
+                    <ul className="list-disc pl-4 space-y-1 text-[var(--text-secondary)] italic text-[11px]">
                       {issue.aiSuggestion.initialChecks.map((ch, idx) => <li key={idx}>{ch}</li>)}
                     </ul>
                   </div>
@@ -387,28 +386,26 @@ export default function IssueDetail() {
 
         {/* Status Error Display */}
         {statusError && (
-          <div className="bg-red-950/40 border border-red-900 text-red-300 p-3.5 rounded-xl text-xs">
-            ⚠️ {statusError}
+          <div className="bg-[var(--critical-bg)] border border-[var(--danger)] text-[var(--danger)] p-3.5 rounded-xl text-xs font-semibold">
+            ⚠ {statusError}
           </div>
         )}
 
-        {/* Technician Workflow Panel */}
+        {/* Technician Action Board */}
         {(isAssignedTech || isAdmin) && (
-          <div className="bg-gray-900 border border-gray-808 rounded-2xl p-6 shadow-xl space-y-4">
-            <h3 className="text-xs text-gray-550 uppercase tracking-widest font-black">⚙️ Technician Workflow Controls</h3>
+          <div className="card p-6 space-y-4">
+            <h3 className="text-xs text-[var(--text-secondary)] uppercase tracking-wider font-bold">🔧 Technician Workflow Controls</h3>
             
-            {/* Status next transitions buttons container */}
             <div className="flex flex-wrap gap-3">
               {issue.status === 'Reported' && (
-                <p className="text-xs text-gray-500 italic">Please allocate this issue first. Assigned technicians can update states.</p>
+                <p className="text-xs text-[var(--text-secondary)] italic">Please assign a technician. Assigned technicians will see state transitions.</p>
               )}
 
-              {/* Assignment and diagnostics transitions checks */}
               {issue.status === 'Assigned' && (
                 <button
                   onClick={() => executeStatusTransition('Inspection Started')}
                   disabled={statusLoading}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                  className="btn-accent px-4 py-2 text-xs"
                 >
                   🔍 Start On-Site Inspection
                 </button>
@@ -418,7 +415,7 @@ export default function IssueDetail() {
                 <button
                   onClick={() => executeStatusTransition('Maintenance In Progress')}
                   disabled={statusLoading}
-                  className="bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                  className="btn-accent px-4 py-2 text-xs bg-[var(--accent)] hover:bg-[var(--accent)]"
                 >
                   🔧 Begin Repairs
                 </button>
@@ -429,15 +426,15 @@ export default function IssueDetail() {
                   <button
                     onClick={() => executeStatusTransition('Waiting for Parts')}
                     disabled={statusLoading}
-                    className="bg-purple-650 hover:bg-purple-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    className="px-4 py-2 text-xs rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all cursor-pointer font-semibold"
                   >
                     📦 Wait for Spare Parts
                   </button>
                   <button
                     onClick={() => setShowLogModal(true)}
-                    className="bg-green-600 hover:bg-green-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    className="btn-accent px-4 py-2 text-xs"
                   >
-                    ✓ Log Maintenance & Resolve
+                    ✓ Log Service &amp; Resolve
                   </button>
                 </>
               )}
@@ -447,35 +444,34 @@ export default function IssueDetail() {
                   <button
                     onClick={() => executeStatusTransition('Maintenance In Progress')}
                     disabled={statusLoading}
-                    className="bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    className="px-4 py-2 text-xs rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all cursor-pointer font-semibold"
                   >
                     🔧 Resume Repairs
                   </button>
                   <button
                     onClick={() => setShowLogModal(true)}
-                    className="bg-green-600 hover:bg-green-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    className="btn-accent px-4 py-2 text-xs"
                   >
-                    ✓ Log Maintenance & Resolve
+                    ✓ Log Service &amp; Resolve
                   </button>
                 </>
               )}
 
-              {/* Resolved / Reopening controls */}
               {issue.status === 'Resolved' && (
                 <>
                   <button
                     onClick={() => executeStatusTransition('Closed')}
                     disabled={statusLoading}
-                    className="bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    className="px-4 py-2 text-xs rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--accent)] hover:text-[var(--accent)] transition-all cursor-pointer font-semibold"
                   >
                     🔒 Close Incident File
                   </button>
                   <button
                     onClick={() => executeStatusTransition('Reopened')}
                     disabled={statusLoading}
-                    className="bg-pink-650 hover:bg-pink-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    className="px-4 py-2 text-xs rounded-xl bg-[var(--surface-raised)] border border-[var(--danger)] text-[var(--danger)] hover:bg-[var(--critical-bg)] transition-all cursor-pointer font-semibold"
                   >
-                    ♻️ Reopen Issue
+                    reopen Issue
                   </button>
                 </>
               )}
@@ -484,9 +480,9 @@ export default function IssueDetail() {
                 <button
                   onClick={() => executeStatusTransition('Reopened')}
                   disabled={statusLoading}
-                  className="bg-pink-650 hover:bg-pink-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                  className="px-4 py-2 text-xs rounded-xl bg-[var(--surface-raised)] border border-[var(--danger)] text-[var(--danger)] hover:bg-[var(--critical-bg)] transition-all cursor-pointer font-semibold"
                 >
-                  ♻️ Reopen Incident File
+                  reopen Incident File
                 </button>
               )}
 
@@ -495,21 +491,21 @@ export default function IssueDetail() {
                   <button
                     onClick={() => executeStatusTransition('Assigned')}
                     disabled={statusLoading}
-                    className="bg-blue-650 hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    className="px-4 py-2 text-xs rounded-xl bg-[var(--surface-raised)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all cursor-pointer font-semibold"
                   >
                     Re-Assign Tech
                   </button>
                   <button
                     onClick={() => executeStatusTransition('Inspection Started')}
                     disabled={statusLoading}
-                    className="bg-indigo-650 hover:bg-indigo-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    className="btn-accent px-4 py-2 text-xs"
                   >
                     🔍 Run Re-Inspection
                   </button>
                   <button
                     onClick={() => executeStatusTransition('Maintenance In Progress')}
                     disabled={statusLoading}
-                    className="bg-orange-650 hover:bg-orange-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-colors cursor-pointer"
+                    className="btn-accent px-4 py-2 text-xs"
                   >
                     🔧 Resume Maintenance
                   </button>
@@ -517,67 +513,66 @@ export default function IssueDetail() {
               )}
             </div>
 
-            {/* Quick Helper text reminding of log requirement */}
             {(issue.status === 'Maintenance In Progress' || issue.status === 'Waiting for Parts') && (
-              <p className="text-[10px] text-gray-500 font-light mt-1 select-none">
-                * Note: The issue cannot transition to &ldquo;Resolved&rdquo; status until at least one Maintenance Log has been documented.
+              <p className="text-[10px] text-[var(--text-secondary)] font-light mt-1">
+                * Note: The issue cannot transition to &ldquo;Resolved&rdquo; status until a detailed Maintenance Log is submitted.
               </p>
             )}
           </div>
         )}
 
-        {/* Maintenance Logs Timeline */}
+        {/* Maintenance Logs list */}
         <div className="space-y-4">
-          <h3 className="text-sm font-bold text-white tracking-widest uppercase">📋 Maintenance Activity log history</h3>
+          <h3 className="text-xs font-bold text-[var(--text-primary)] tracking-widest uppercase">📋 Maintenance Activity Log History</h3>
           
           {logs.length === 0 ? (
-            <div className="bg-gray-900 border border-gray-908 p-6 text-center rounded-2xl text-xs text-gray-500 font-light select-none">
-              No technical maintenance actions recorded yet.
+            <div className="border border-dashed border-[var(--border)] p-8 text-center rounded-xl text-xs text-[var(--text-secondary)] italic select-none">
+              No technical maintenance actions recorded.
             </div>
           ) : (
             <div className="space-y-4">
               {logs.map((log) => (
-                <div key={log._id} className="bg-gray-900 border border-gray-808 rounded-xl p-5 space-y-3 select-text">
-                  <div className="flex justify-between items-start flex-wrap gap-2 text-xs">
+                <div key={log._id} className="card p-5 space-y-4 text-xs">
+                  <div className="flex justify-between items-start flex-wrap gap-2 border-b border-[var(--border)] pb-3">
                     <div>
-                      <p className="text-gray-400 font-semibold text-white">Technician: {log.technician?.name || 'System'}</p>
-                      <p className="text-[10px] text-gray-550 mt-0.5">{new Date(log.createdAt).toLocaleString()}</p>
+                      <p className="font-semibold text-[var(--text-primary)]">Tech: {log.technician?.name || 'System'}</p>
+                      <p className="text-[10px] text-[var(--text-secondary)] mt-0.5 font-mono-code">{new Date(log.createdAt).toLocaleString()}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-indigo-400 font-bold font-mono">Cost: ${log.cost}</p>
-                      <p className="text-[10px] text-gray-400">Final Condition: <strong className="text-gray-200">{log.finalCondition}</strong></p>
+                      <p className="text-[var(--accent)] font-bold font-mono-code text-sm">Cost: ${log.cost}</p>
+                      <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">Asset Condition: <strong className="text-[var(--text-primary)]">{log.finalCondition}</strong></p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-3 border-t border-gray-800/40">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <span className="text-gray-550 uppercase tracking-wider block font-bold text-[9px] mb-1">Inspection Findings</span>
-                      <p className="text-gray-300 font-light italic leading-5">&ldquo;{log.inspectionNotes}&rdquo;</p>
+                      <span className="text-[var(--text-secondary)] uppercase tracking-wider block font-bold text-[9px] mb-1">Inspection Findings</span>
+                      <p className="text-[var(--text-primary)] font-light italic leading-5">&ldquo;{log.inspectionNotes}&rdquo;</p>
                     </div>
                     <div>
-                      <span className="text-gray-550 uppercase tracking-wider block font-bold text-[9px] mb-1">Work Performed</span>
-                      <p className="text-gray-300 font-light leading-5">{log.workPerformed}</p>
+                      <span className="text-[var(--text-secondary)] uppercase tracking-wider block font-bold text-[9px] mb-1">Work Performed</span>
+                      <p className="text-[var(--text-primary)] font-light leading-5">{log.workPerformed}</p>
                     </div>
                   </div>
 
                   {log.partsUsed && log.partsUsed.length > 0 && (
-                    <div className="pt-2 text-xs">
-                      <span className="text-gray-550 text-[10px] mr-2">Components Replaced:</span>
-                      <div className="inline-flex flex-wrap gap-1">
+                    <div className="pt-1 flex items-center gap-2 flex-wrap">
+                      <span className="text-[var(--text-secondary)] text-[10px] uppercase font-bold">Components Replaced:</span>
+                      <div className="flex flex-wrap gap-1">
                         {log.partsUsed.map((p, idx) => (
-                          <span key={idx} className="bg-gray-950 px-2 py-0.5 border border-gray-800 rounded font-mono text-[10px] text-gray-400">{p}</span>
+                          <span key={idx} className="bg-[var(--surface-raised)] border border-[var(--border)] px-2 py-0.5 rounded font-mono-code text-[10px] text-[var(--text-primary)]">{p}</span>
                         ))}
                       </div>
                     </div>
                   )}
 
                   {log.evidenceUrls && log.evidenceUrls.length > 0 && (
-                    <div className="pt-2 space-y-1">
-                      <span className="text-gray-550 text-[10px] block mb-1">Evidence Photos:</span>
+                    <div className="pt-2">
+                      <span className="text-[var(--text-secondary)] text-[10px] uppercase font-bold block mb-1.5">Repair Proof Photos:</span>
                       <div className="flex gap-2">
                         {log.evidenceUrls.map((eUrl, eIdx) => (
-                          <a key={eIdx} href={eUrl} target="_blank" rel="noreferrer" className="block border border-gray-850 hover:border-gray-800 rounded overflow-hidden cursor-zoom-in">
-                            <img src={eUrl} alt="Log evidence" className="w-12 h-12 object-cover" />
+                          <a key={eIdx} href={eUrl} target="_blank" rel="noreferrer" className="block border border-[var(--border)] hover:border-[var(--accent)] rounded overflow-hidden cursor-zoom-in">
+                            <img src={eUrl} alt="Log evidence file" className="w-12 h-12 object-cover" />
                           </a>
                         ))}
                       </div>
@@ -589,65 +584,65 @@ export default function IssueDetail() {
           )}
         </div>
 
-        {/* Maintenance Log Submission Modal */}
+        {/* Modal: Service logs form */}
         {showLogModal && (
-          <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl">
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl">
               
-              <div className="p-5 border-b border-gray-800 flex justify-between items-center">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Log Service Performance</h3>
-                <button onClick={() => setShowLogModal(false)} className="text-gray-500 hover:text-gray-300 font-bold">×</button>
+              <div className="px-6 py-4 border-b border-[var(--border)] flex justify-between items-center">
+                <h3 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">Log Service Details</h3>
+                <button onClick={() => setShowLogModal(false)} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-lg leading-none cursor-pointer">&times;</button>
               </div>
 
-              <form onSubmit={handleAddMaintenanceLog} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+              <form onSubmit={handleAddMaintenanceLog} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
                 {logError && (
-                  <div className="bg-red-950/40 border border-red-900 text-red-300 p-3 rounded-lg text-xs">
+                  <div className="bg-[var(--critical-bg)] border border-[var(--danger)] text-[var(--danger)] p-3 rounded-lg text-xs font-semibold">
                     {logError}
                   </div>
                 )}
 
                 <div>
-                  <label className="text-xs text-gray-500 block uppercase font-bold mb-1">Inspection Findings *</label>
+                  <label className={labelClass}>Inspection Findings *</label>
                   <textarea
                     required
                     value={inspectionNotes}
                     onChange={(e) => setInspectionNotes(e.target.value)}
                     rows={2}
-                    className="w-full bg-gray-850 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500"
-                    placeholder="Describe issue diagnostics results..."
+                    className="input-base resize-none"
+                    placeholder="Describe issue diagnostic findings..."
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 block uppercase font-bold mb-1">Work Details Performed *</label>
+                  <label className={labelClass}>Work Details Performed *</label>
                   <textarea
                     required
                     value={workPerformed}
                     onChange={(e) => setWorkPerformed(e.target.value)}
                     rows={2}
-                    className="w-full bg-gray-850 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500"
-                    placeholder="Details about components replaced, tests run, tuning, etc."
+                    className="input-base resize-none"
+                    placeholder="Describe parts replaced, tests run, repairs made..."
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-gray-500 block uppercase font-bold mb-1">Work Cost ($) *</label>
+                    <label className={labelClass}>Work Cost ($) *</label>
                     <input
                       type="number"
                       required
                       min={0}
                       value={cost}
                       onChange={(e) => setCost(Math.max(0, parseFloat(e.target.value) || 0))}
-                      className="w-full bg-gray-850 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="input-base"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 block uppercase font-bold mb-1">Final Asset Condition *</label>
+                    <label className={labelClass}>Final Asset Condition *</label>
                     <select
                       value={finalCondition}
                       onChange={(e) => setFinalCondition(e.target.value)}
-                      className="w-full bg-gray-850 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="input-base cursor-pointer"
                     >
                       <option value="Good">Good</option>
                       <option value="Fair">Fair</option>
@@ -658,79 +653,77 @@ export default function IssueDetail() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-gray-505 block uppercase font-bold mb-1">Time Started *</label>
+                    <label className={labelClass}>Time Started *</label>
                     <input
                       type="datetime-local"
                       required
                       value={startedAt}
                       onChange={(e) => setStartedAt(e.target.value)}
-                      className="w-full bg-gray-850 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="input-base cursor-pointer text-xs"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-505 block uppercase font-bold mb-1">Time Completed *</label>
+                    <label className={labelClass}>Time Completed *</label>
                     <input
                       type="datetime-local"
                       required
                       value={completedAt}
                       onChange={(e) => setCompletedAt(e.target.value)}
-                      className="w-full bg-gray-850 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="input-base cursor-pointer text-xs"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 block uppercase font-bold mb-1">Parts Replaced (Comma Separated)</label>
+                  <label className={labelClass}>Parts Replaced (Comma-separated list)</label>
                   <input
                     type="text"
                     value={partsInput}
                     onChange={(e) => setPartsInput(e.target.value)}
-                    className="w-full bg-gray-850 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500"
-                    placeholder="e.g. Capacitor, fan blade, 12AWG wire"
+                    className="input-base"
+                    placeholder="e.g. Capacitor, compressor fan blade, fuse"
                   />
                 </div>
 
-                {/* Evidence attachments (multiple) */}
                 <div>
-                  <label className="text-xs text-gray-505 block uppercase font-bold mb-1">Repair Proof Photos (Max 5)</label>
+                  <label className={labelClass}>Repair Proof Photos (Max 5)</label>
                   <input
                     type="file"
                     multiple
                     accept="image/*"
                     onChange={(e) => setEvidenceFiles(Array.from(e.target.files || []))}
-                    className="w-full text-xs text-gray-400 file:bg-gray-800 file:border-0 file:text-indigo-400 file:py-1.5 file:px-3 file:rounded-lg file:mr-3 hover:file:bg-gray-750 cursor-pointer"
+                    className="w-full text-xs text-[var(--text-secondary)] file:bg-[var(--surface-raised)] file:border file:border-[var(--border)] file:text-[var(--text-secondary)] file:py-2 file:px-4 file:rounded-lg file:mr-3 hover:file:text-[var(--accent)] hover:file:border-[var(--accent)] file:font-semibold cursor-pointer"
                   />
                 </div>
 
-                {/* Next service date validation input */}
-                <div className="border-t border-gray-800/80 pt-4">
-                  <label className="text-xs text-indigo-400 block uppercase font-bold mb-1">Set Next Service Schedule (Required to Resolve)</label>
+                <div className="border-t border-[var(--border)] pt-4">
+                  <label className="text-xs text-[var(--accent)] block uppercase font-bold mb-1.5">Set Next Service Schedule (Required)</label>
                   <input
                     type="date"
                     required
                     value={nextServiceDate}
                     onChange={(e) => setNextServiceDate(e.target.value)}
-                    className="w-full bg-gray-850 border border-indigo-950 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="input-base cursor-pointer font-mono-code text-xs border-[var(--accent)]/50 focus:border-[var(--accent)]"
                   />
-                  <span className="text-[10px] text-gray-550 select-none italic mt-1 block">
-                    * By resolving, the status of this ticket will immediately change to &ldquo;Resolved&rdquo;. The linked asset&apos;s status will reset to &ldquo;Operational&rdquo; and scheduled next service dates will be validated and updated.
+                  <span className="text-[10px] text-[var(--text-secondary)] italic mt-1 block">
+                    * The linked asset status will revert to Operational, and next service schedules will be updated.
                   </span>
                 </div>
 
                 <div className="flex gap-3 pt-3">
                   <button
-                    type="submit"
-                    disabled={logLoading}
-                    className="flex-1 bg-green-600 hover:bg-green-500 disabled:opacity-50 text-white font-semibold py-2.5 rounded-xl text-center text-xs tracking-wide cursor-pointer"
-                  >
-                    {logLoading ? 'Saving...' : 'Submit Log & Resolve Issue'}
-                  </button>
-                  <button
                     type="button"
                     onClick={() => setShowLogModal(false)}
-                    className="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2.5 px-4 rounded-xl text-center text-xs cursor-pointer"
+                    className="flex-1 py-2.5 bg-[var(--surface-raised)] hover:bg-[var(--border)] text-[var(--text-secondary)] font-semibold border border-[var(--border)] rounded-xl text-center text-xs transition-colors cursor-pointer"
                   >
                     Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={logLoading}
+                    className="btn-accent flex-1 py-2.5 text-xs"
+                  >
+                    {logLoading ? 'Saving...' : 'Submit Log & Resolve'}
                   </button>
                 </div>
               </form>

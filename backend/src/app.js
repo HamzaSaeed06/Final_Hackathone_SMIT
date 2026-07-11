@@ -18,8 +18,12 @@ const app = express();
 app.use(helmet());
 
 // Enable CORS
+const frontendUrls = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+  : [];
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:5173',
+  ...frontendUrls,
   'http://localhost:5173',
   'http://localhost:80',
 ];

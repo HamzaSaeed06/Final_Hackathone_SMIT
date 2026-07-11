@@ -3,23 +3,31 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const STATUS_COLORS = {
-  'Reported': 'bg-yellow-950/60 text-yellow-300 border-yellow-800',
-  'Assigned': 'bg-blue-950/60 text-blue-300 border-blue-800',
-  'Inspection Started': 'bg-indigo-950/50 text-indigo-300 border-indigo-900',
-  'Maintenance In Progress': 'bg-orange-950/60 text-orange-300 border-orange-870',
-  'Waiting for Parts': 'bg-purple-950/60 text-purple-300 border-purple-800',
-  'Resolved': 'bg-green-950/60 text-green-300 border-green-800',
-  'Closed': 'bg-gray-800 text-gray-400 border-gray-700',
-  'Reopened': 'bg-pink-950/60 text-pink-300 border-pink-850',
-};
+const STATUS_OPTIONS = ['Reported', 'Assigned', 'Inspection Started', 'Maintenance In Progress', 'Waiting for Parts', 'Resolved', 'Closed', 'Reopened'];
 
-const PRIORITY_COLORS = {
-  'Low': 'bg-gray-800/40 text-gray-400 border-gray-700',
-  'Medium': 'bg-blue-950/40 text-blue-400 border-blue-900',
-  'High': 'bg-orange-950/50 text-orange-400 border-orange-900',
-  'Critical': 'bg-red-950 text-red-400 border-red-800 shadow-[0_0_15px_rgba(239,68,68,0.2)] animate-pulse font-extrabold', // visual check alert
-};
+function IssueBadge({ status }) {
+  const map = {
+    'Reported':               'badge badge-reported',
+    'Assigned':               'badge badge-assigned',
+    'Inspection Started':     'badge badge-inspection',
+    'Maintenance In Progress':'badge badge-maintenance',
+    'Waiting for Parts':      'badge badge-waiting',
+    'Resolved':               'badge badge-resolved',
+    'Closed':                 'badge badge-closed',
+    'Reopened':               'badge badge-reopened',
+  };
+  return <span className={map[status] || 'badge badge-closed'}>{status}</span>;
+}
+
+function PriorityBadge({ priority }) {
+  const map = {
+    'Low':      'badge badge-low',
+    'Medium':   'badge badge-medium',
+    'High':     'badge badge-high',
+    'Critical': 'badge badge-critical',
+  };
+  return <span className={map[priority] || 'badge badge-low'}>{priority}</span>;
+}
 
 export default function Issues() {
   const navigate = useNavigate();
@@ -31,16 +39,11 @@ export default function Issues() {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Filters
   const [status, setStatus] = useState(qStatus);
   const [priority, setPriority] = useState(qPriority);
   const [search, setSearch] = useState(qSearch);
-  
-  // Technician lists for admin assignment filter
   const [technicians, setTechnicians] = useState([]);
   const [selectedTech, setSelectedTech] = useState('');
-
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -50,13 +53,9 @@ export default function Issues() {
   }, [qStatus, qPriority, qSearch]);
 
   useEffect(() => {
-    // Check role
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setIsAdmin(user.role === 'admin');
-
-    if (user.role === 'admin') {
-      fetchTechnicians();
-    }
+    if (user.role === 'admin') fetchTechnicians();
   }, []);
 
   const fetchTechnicians = async () => {
@@ -91,7 +90,7 @@ export default function Issues() {
       });
       setIssues(res.data.data);
     } catch (err) {
-      const msg = err.response?.data?.error?.message || 'Failed to load issues catalog.';
+      const msg = err.response?.data?.error?.message || 'Failed to load issues.';
       setError(msg);
       toast.error(msg);
     } finally {
@@ -104,75 +103,73 @@ export default function Issues() {
   }, [status, priority, selectedTech]);
 
   const handleSearchKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      fetchIssues();
-    }
+    if (e.key === 'Enter') fetchIssues();
   };
 
+  const labelClass = 'text-[10px] text-[var(--text-secondary)] block uppercase tracking-wider font-semibold mb-1';
+
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-200 p-6 select-none font-sans">
+    <div className="min-h-screen bg-[var(--bg)] p-4 md:p-6 transition-colors">
       <div className="max-w-6xl mx-auto space-y-6">
-        
+
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-900 pb-5">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[var(--border)] pb-5">
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              🛠️ Issues Dispatch Board
-            </h1>
-            <p className="text-sm text-gray-500 font-light mt-0.5">
+            <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">Issues Board</h1>
+            <p className="text-sm text-[var(--text-secondary)] font-light mt-0.5">
               Review and manage logged incident reports and technician logs.
             </p>
           </div>
           <button
             onClick={() => navigate('/assets')}
-            className="bg-gray-900 border border-gray-800 hover:bg-gray-850 text-xs px-4 py-2 rounded-xl text-gray-400 font-medium transition-colors cursor-pointer"
+            className="text-xs px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)] bg-[var(--surface)] transition-colors cursor-pointer"
           >
-            ← Assets Catalog
+            &larr; Assets Catalog
           </button>
         </div>
 
         {/* Filter controls */}
-        <div className={`grid grid-cols-1 gap-4 bg-gray-900/40 border border-gray-900 p-4 rounded-xl ${isAdmin ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
+        <div className={`grid grid-cols-1 gap-3 bg-[var(--surface)] border border-[var(--border)] p-4 rounded-xl ${isAdmin ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
           <div>
-            <label className="text-[10px] text-gray-550 block uppercase tracking-wider font-semibold mb-1">Search</label>
+            <label className={labelClass}>Search</label>
             <div className="relative">
               <input
                 type="text"
-                placeholder="ID or title, hit Enter..."
+                placeholder="ID or title, press Enter..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={handleSearchKeyPress}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-gray-505 focus:outline-none focus:border-indigo-500"
+                className="input-base font-mono-code text-xs py-1.5"
               />
               {search && (
                 <button
                   onClick={() => { setSearch(''); setTimeout(fetchIssues, 0); }}
-                  className="absolute right-2.5 top-1.5 text-xs text-gray-500 hover:text-gray-300 font-bold"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold"
                 >
-                  ×
+                  &times;
                 </button>
               )}
             </div>
           </div>
 
           <div>
-            <label className="text-[10px] text-gray-550 block uppercase tracking-wider font-semibold mb-1">Status</label>
+            <label className={labelClass}>Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-550"
+              className="input-base text-xs py-1.5 cursor-pointer"
             >
               <option value="">All Statuses</option>
-              {Object.keys(STATUS_COLORS).map(s => <option key={s} value={s}>{s}</option>)}
+              {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="text-[10px] text-gray-550 block uppercase tracking-wider font-semibold mb-1">Priority</label>
+            <label className={labelClass}>Priority</label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full bg-gray-850 border border-gray-770 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-550"
+              className="input-base text-xs py-1.5 cursor-pointer"
             >
               <option value="">All Priorities</option>
               <option value="Low">Low</option>
@@ -182,14 +179,13 @@ export default function Issues() {
             </select>
           </div>
 
-          {/* Technician filter — admin only, uses real API data */}
           {isAdmin && (
             <div>
-              <label className="text-[10px] text-gray-550 block uppercase tracking-wider font-semibold mb-1">Technician</label>
+              <label className={labelClass}>Technician</label>
               <select
                 value={selectedTech}
                 onChange={(e) => setSelectedTech(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                className="input-base text-xs py-1.5 cursor-pointer"
               >
                 <option value="">All Technicians</option>
                 {technicians.map(t => (
@@ -202,80 +198,72 @@ export default function Issues() {
           <div className="flex items-end">
             <button
               onClick={fetchIssues}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-1.5 rounded-lg text-xs tracking-wide transition-all shadow-md cursor-pointer"
+              className="btn-accent w-full py-1.5 text-xs"
             >
               Apply Filter
             </button>
           </div>
         </div>
 
-        {/* Content list */}
+        {/* Content */}
         {loading ? (
-          <div className="py-12 text-center text-gray-500">
-            <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-xs">Fetching incidents index...</p>
+          <div className="py-12 text-center text-[var(--text-secondary)]">
+            <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-xs">Fetching incidents...</p>
           </div>
         ) : error ? (
-          <div className="p-4 bg-red-950/40 border border-red-900 text-red-300 rounded-xl text-center text-xs">
+          <div className="p-4 bg-[var(--critical-bg)] border border-[var(--danger)] text-[var(--danger)] rounded-xl text-center text-xs">
             {error}
           </div>
         ) : issues.length === 0 ? (
-          <div className="py-12 border border-gray-900 border-dashed rounded-2xl text-center text-gray-550">
-            <p className="text-sm font-light">No reported issues matches the filter search criteria.</p>
+          <div className="py-12 border border-dashed border-[var(--border)] rounded-xl text-center text-[var(--text-secondary)]">
+            <p className="text-sm font-light">No issues match the current filters.</p>
           </div>
         ) : (
-          <div className="bg-gray-900 border border-gray-808 rounded-2xl overflow-hidden shadow-xl">
-            {/* Desktop view table */}
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
+            {/* Desktop table */}
             <div className="overflow-x-auto hidden md:block">
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="bg-gray-950/80 border-b border-gray-800 text-[10px] text-gray-500 uppercase tracking-widest font-black">
-                    <th className="p-4">Issue Code</th>
-                    <th className="p-4">Asset Details</th>
-                    <th className="p-4">Issue Summary</th>
+                  <tr className="bg-[var(--surface-raised)] border-b border-[var(--border)] text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-bold">
+                    <th className="p-4">Issue #</th>
+                    <th className="p-4">Asset</th>
+                    <th className="p-4">Summary</th>
                     <th className="p-4">Priority</th>
                     <th className="p-4">Status</th>
                     <th className="p-4">Assigned To</th>
                     <th className="p-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-800/60 text-xs">
+                <tbody className="divide-y divide-[var(--border)] text-xs">
                   {issues.map(issue => {
                     const isCritical = issue.priority === 'Critical';
                     return (
                       <tr
                         key={issue._id}
-                        className={`hover:bg-gray-850/45 transition-colors cursor-pointer ${isCritical ? 'border-l-4 border-l-red-600' : ''}`}
+                        className={`hover:bg-[var(--surface-raised)] transition-colors cursor-pointer ${isCritical ? 'border-l-4 border-l-[var(--danger)]' : ''}`}
                         onClick={() => navigate(`/issues/${issue._id}`)}
                       >
-                        <td className="p-4 font-mono font-bold text-gray-300 uppercase select-all">
+                        <td className="p-4 font-mono-code font-bold text-[var(--text-primary)] uppercase select-all text-xs">
                           {issue.issueNumber}
                         </td>
                         <td className="p-4">
-                          <p className="font-semibold text-white">{issue.asset?.name || 'Unknown'}</p>
-                          <p className="text-[10px] text-gray-500 font-mono mt-0.5">{issue.asset?.assetCode || 'TBD'}</p>
+                          <p className="font-semibold text-[var(--text-primary)]">{issue.asset?.name || 'Unknown'}</p>
+                          <p className="font-mono-code text-[10px] text-[var(--text-secondary)] mt-0.5">{issue.asset?.assetCode || '—'}</p>
                         </td>
-                        <td className="p-4 max-w-xs truncate">
-                          <p className="font-medium text-gray-300">{issue.title}</p>
-                          <p className="text-[10px] text-gray-550 mt-0.5 italic">By: {issue.reporterName}</p>
+                        <td className="p-4 max-w-xs">
+                          <p className="font-medium text-[var(--text-primary)] truncate">{issue.title}</p>
+                          <p className="text-[10px] text-[var(--text-secondary)] mt-0.5 italic">By: {issue.reporterName}</p>
                         </td>
-                        <td className="p-4">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${PRIORITY_COLORS[issue.priority]}`}>
-                            {issue.priority}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${STATUS_COLORS[issue.status]}`}>
-                            {issue.status}
-                          </span>
-                        </td>
-                        <td className="p-4 text-gray-400 font-light">
-                          {issue.assignedTechnician?.name || <span className="text-gray-600 italic">Unassigned</span>}
+                        <td className="p-4"><PriorityBadge priority={issue.priority} /></td>
+                        <td className="p-4"><IssueBadge status={issue.status} /></td>
+                        <td className="p-4 text-[var(--text-secondary)]">
+                          {issue.assignedTechnician?.name || <span className="italic">Unassigned</span>}
                         </td>
                         <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => navigate(`/issues/${issue._id}`)}
-                            className="bg-indigo-650/10 border border-indigo-900/50 hover:bg-indigo-600 hover:text-white px-2.5 py-1 rounded text-[10px] font-semibold text-indigo-400 transition-all cursor-pointer"
+                            className="px-3 py-1 rounded-md text-[10px] font-semibold text-[var(--accent)] border border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] transition-all cursor-pointer"
                           >
                             Inspect
                           </button>
@@ -287,36 +275,30 @@ export default function Issues() {
               </table>
             </div>
 
-            {/* Mobile layout list cards */}
-            <div className="md:hidden divide-y divide-gray-800">
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-[var(--border)]">
               {issues.map(issue => {
                 const isCritical = issue.priority === 'Critical';
                 return (
                   <div
                     key={issue._id}
-                    className={`p-4 space-y-3 active:bg-gray-850/60 transition-all ${isCritical ? 'border-l-4 border-l-red-600 Bg-red-950/5' : ''}`}
+                    className={`p-4 space-y-3 active:bg-[var(--surface-raised)] transition-all cursor-pointer ${isCritical ? 'border-l-4 border-l-[var(--danger)]' : ''}`}
                     onClick={() => navigate(`/issues/${issue._id}`)}
                   >
                     <div className="flex justify-between items-center">
-                      <span className="font-mono font-bold text-gray-300 uppercase text-xs">{issue.issueNumber}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-semibold border ${STATUS_COLORS[issue.status]}`}>
-                        {issue.status}
-                      </span>
+                      <span className="font-mono-code font-bold text-[var(--text-primary)] uppercase text-xs">{issue.issueNumber}</span>
+                      <IssueBadge status={issue.status} />
                     </div>
-
                     <div>
-                      <h4 className="font-semibold text-white text-sm">{issue.title}</h4>
-                      <p className="text-xs text-gray-450 mt-0.5 flex gap-1 items-center">
-                        Device: <span className="font-mono text-[10px] text-indigo-400 uppercase">{issue.asset?.assetCode}</span> ({issue.asset?.name})
+                      <h4 className="font-semibold text-[var(--text-primary)] text-sm">{issue.title}</h4>
+                      <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                        Asset: <span className="font-mono-code text-[var(--accent)]">{issue.asset?.assetCode}</span> ({issue.asset?.name})
                       </p>
                     </div>
-
                     <div className="flex justify-between items-center text-[10px] pt-1">
-                      <span className={`px-1.5 py-0.5 rounded font-semibold border ${PRIORITY_COLORS[issue.priority]}`}>
-                        {issue.priority}
-                      </span>
-                      <span className="text-gray-500">
-                        Assignee: <span className="text-gray-400 font-medium">{issue.assignedTechnician?.name || 'None'}</span>
+                      <PriorityBadge priority={issue.priority} />
+                      <span className="text-[var(--text-secondary)]">
+                        Assignee: <span className="text-[var(--text-primary)] font-medium">{issue.assignedTechnician?.name || 'None'}</span>
                       </span>
                     </div>
                   </div>

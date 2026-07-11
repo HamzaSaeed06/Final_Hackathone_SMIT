@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -24,7 +25,6 @@ export default function Login() {
       const res = await axios.post(`${API_URL}/auth/login`, { email, password });
       const { token, user } = res.data.data;
 
-      // Persist both to Zustand store (which also writes localStorage)
       localStorage.setItem('user', JSON.stringify(user));
       setAuth(user, token);
 
@@ -39,24 +39,29 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-12 font-sans">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center px-4 py-12 transition-colors">
+      {/* Theme toggle top-right */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
+      <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 mb-4 shadow-lg shadow-indigo-500/30">
-            <span className="text-2xl">ðŸ›¡ï¸</span>
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[var(--accent)] mb-4 shadow-lg">
+            <span className="text-[var(--accent-contrast)] font-black text-2xl">M</span>
           </div>
-          <h1 className="text-2xl font-black text-white tracking-tight">MaintainIQ</h1>
-          <p className="text-xs text-gray-500 mt-1 font-light">Enterprise Asset Maintenance Platform</p>
+          <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">MaintainIQ</h1>
+          <p className="text-xs text-[var(--text-secondary)] mt-1 font-medium uppercase tracking-widest">Enterprise Asset Maintenance</p>
         </div>
 
         {/* Card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl p-8">
-          <h2 className="text-base font-bold text-white mb-6">Sign in to your account</h2>
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-sm p-8">
+          <h2 className="text-sm font-bold text-[var(--text-primary)] mb-6 uppercase tracking-wider">Sign in to your account</h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="text-[11px] text-gray-500 block uppercase tracking-wider font-semibold mb-1.5">
+              <label htmlFor="email" className="text-[11px] text-[var(--text-secondary)] block uppercase tracking-wider font-semibold mb-1.5">
                 Email Address
               </label>
               <input
@@ -66,12 +71,12 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="input-base"
               />
             </div>
 
             <div>
-              <label className="text-[11px] text-gray-500 block uppercase tracking-wider font-semibold mb-1.5">
+              <label htmlFor="password" className="text-[11px] text-[var(--text-secondary)] block uppercase tracking-wider font-semibold mb-1.5">
                 Password
               </label>
               <input
@@ -80,21 +85,21 @@ export default function Login() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                placeholder="••••••••"
+                className="input-base"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold py-3 rounded-xl text-sm tracking-wide shadow-lg hover:shadow-indigo-500/20 transition-all cursor-pointer mt-2"
+              className="btn-accent w-full py-3 flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
+                <>
+                  <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin inline-block" />
                   Authenticating...
-                </span>
+                </>
               ) : (
                 'Sign In'
               )}
@@ -102,11 +107,10 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="text-center text-[10px] text-gray-600 mt-6 select-none uppercase tracking-widest">
+        <p className="text-center text-[10px] text-[var(--text-secondary)] mt-6 select-none uppercase tracking-widest">
           MaintainIQ &middot; Secure Operations Platform
         </p>
       </div>
     </div>
   );
 }
-

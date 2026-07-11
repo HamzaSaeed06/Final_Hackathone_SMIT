@@ -4,14 +4,17 @@ import { assetService } from '../services/assetService';
 import AssetForm from '../components/AssetForm';
 import toast from 'react-hot-toast';
 
-const STATUS_COLORS = {
-  'Operational': 'bg-green-900/40 text-green-300 border-green-800',
-  'Issue Reported': 'bg-yellow-900/40 text-yellow-300 border-yellow-800',
-  'Under Inspection': 'bg-blue-900/40 text-blue-300 border-blue-800',
-  'Under Maintenance': 'bg-orange-900/40 text-orange-300 border-orange-880',
-  'Out of Service': 'bg-red-900/40 text-red-300 border-red-800',
-  'Retired': 'bg-gray-700/40 text-gray-400 border-gray-700',
-};
+function AssetStatusBadge({ status }) {
+  const map = {
+    'Operational':      'badge badge-resolved text-xs font-semibold',
+    'Issue Reported':   'badge badge-reported text-xs font-semibold',
+    'Under Inspection': 'badge badge-inspection text-xs font-semibold',
+    'Under Maintenance':'badge badge-maintenance text-xs font-semibold',
+    'Out of Service':   'badge badge-critical text-xs font-semibold',
+    'Retired':          'badge badge-closed text-xs font-semibold',
+  };
+  return <span className={map[status] || 'badge badge-closed text-xs font-semibold'}>{status}</span>;
+}
 
 export default function AssetDetail() {
   const { id } = useParams();
@@ -50,11 +53,11 @@ export default function AssetDetail() {
     if (!qrData?.publicUrl) return;
     try {
       await navigator.clipboard.writeText(qrData.publicUrl);
-      toast.success('Public page URL link copied!');
+      toast.success('Public page URL copied!');
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error('Failed to copy public link to clipboard');
+      toast.error('Failed to copy link');
     }
   };
 
@@ -66,103 +69,115 @@ export default function AssetDetail() {
       a.download = `${asset?.assetCode}-qr.png`;
       a.target = '_blank';
       a.click();
-      toast.success('Asset QR Code download started!');
+      toast.success('QR Code download started!');
     } catch (err) {
       toast.error('Could not download QR image');
     }
   };
 
+  const labelClass = 'text-[11px] text-[var(--text-secondary)] block uppercase tracking-wider font-semibold mb-1';
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center text-gray-500 gap-3">
-        <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs">Loading asset telemetry details...</p>
+      <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center text-[var(--text-secondary)] gap-3 transition-colors">
+        <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs">Loading asset details...</p>
       </div>
     );
   }
-  if (error) return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-red-400">{error}</div>;
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center p-4 transition-colors">
+        <div className="bg-[var(--surface)] text-[var(--danger)] border border-[var(--danger)] rounded-xl p-6 text-center max-w-sm">
+          <p className="font-semibold text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!asset) return null;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6">
-      {/* Breadcrumb */}
-      <div className="text-sm text-gray-500 mb-6">
-        <Link to="/assets" className="hover:text-indigo-400">Assets</Link>
-        <span className="mx-2">â€º</span>
-        <span className="text-gray-300">{asset.assetCode}</span>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] p-4 md:p-6 transition-colors">
+      
+      {/* Breadcrumbs */}
+      <div className="text-xs text-[var(--text-secondary)] mb-6 flex items-center gap-1.5 uppercase tracking-wider font-semibold">
+        <Link to="/assets" className="hover:text-[var(--accent)] transition-colors">Assets</Link>
+        <span>&rsaquo;</span>
+        <span className="text-[var(--text-primary)] font-mono-code">{asset.assetCode}</span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Asset Info */}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left: Asset info + Timeline */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-            <div className="flex items-start justify-between mb-4">
+          <div className="card p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 pb-4 border-b border-[var(--border)]">
               <div>
-                <h1 className="text-2xl font-bold text-white">{asset.name}</h1>
-                <p className="text-indigo-400 font-mono text-sm mt-1">{asset.assetCode}</p>
+                <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{asset.name}</h1>
+                <p className="font-mono-code text-sm text-[var(--accent)] mt-0.5 uppercase">{asset.assetCode}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[asset.status]}`}>
-                  {asset.status}
-                </span>
+              <div className="flex items-center gap-3">
+                <AssetStatusBadge status={asset.status} />
                 <button
                   onClick={() => setShowEdit(true)}
-                  className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                  className="px-4.5 py-1.5 rounded-lg border border-[var(--border)] text-xs font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)] bg-[var(--surface)] transition-all cursor-pointer"
                 >
-                  Edit
+                  Edit Asset
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
               {[
                 ['Category', asset.category],
                 ['Location', asset.location],
                 ['Condition', asset.condition],
-                ['Assigned To', asset.assignedTechnician?.name || 'â€”'],
-                ['Last Service', asset.lastServiceDate ? new Date(asset.lastServiceDate).toLocaleDateString() : 'â€”'],
-                ['Next Service', asset.nextServiceDate ? new Date(asset.nextServiceDate).toLocaleDateString() : 'â€”'],
-                ['Created By', asset.createdBy?.name || 'â€”'],
-                ['Created', new Date(asset.createdAt).toLocaleDateString()],
-              ].map(([label, val]) => (
-                <div key={label}>
-                  <span className="text-gray-500 block">{label}</span>
-                  <span className="text-gray-200 font-medium">{val}</span>
+                ['Assigned Technician', asset.assignedTechnician?.name || '—'],
+                ['Last Service Event', asset.lastServiceDate ? new Date(asset.lastServiceDate).toLocaleDateString() : '—'],
+                ['Next Scheduled Service', asset.nextServiceDate ? new Date(asset.nextServiceDate).toLocaleDateString() : '—'],
+                ['Registered By', asset.createdBy?.name || '—'],
+                ['Registration Date', new Date(asset.createdAt).toLocaleDateString()],
+              ].map(([lbl, val]) => (
+                <div key={lbl} className="bg-[var(--surface-raised)] border border-[var(--border)] p-3 rounded-lg">
+                  <span className={labelClass}>{lbl}</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{val}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* History Timeline */}
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 shadow-md">
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              ðŸ“œ Asset Activity Timeline
+          {/* Activity Timeline */}
+          <div className="card p-6">
+            <h2 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider mb-5 pb-3 border-b border-[var(--border)] flex items-center gap-2">
+              📜 Asset Activity Timeline
             </h2>
             {history.length === 0 ? (
-              <div className="py-6 text-center border border-dashed border-gray-800 rounded-xl">
-                <p className="text-gray-550 text-xs">No activity logs recorded for this asset yet.</p>
+              <div className="py-8 text-center border border-dashed border-[var(--border)] rounded-xl">
+                <p className="text-[var(--text-secondary)] text-xs">No activity log entries recorded.</p>
               </div>
             ) : (
-              <div className="relative border-l border-gray-800 pl-4 ml-2 space-y-5">
+              <div className="relative border-l border-[var(--border)] pl-4 ml-2 space-y-5">
                 {history.map((h, i) => (
                   <div key={i} className="relative">
                     {/* Timeline dot */}
-                    <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-gray-950 font-bold" />
+                    <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-[var(--accent)] border-2 border-[var(--surface)]" />
                     
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-gray-200">{h.action}</p>
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-gray-550 font-light">
-                        <span className="font-medium text-gray-400">By: {h.actorName || h.actor}</span>
-                        <span>â€¢</span>
-                        <span>{new Date(h.timestamp).toLocaleString()}</span>
+                      <p className="text-xs font-semibold text-[var(--text-primary)]">{h.action}</p>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-[var(--text-secondary)] font-light">
+                        <span className="font-semibold text-[var(--text-primary)]">By: {h.actorName || h.actor}</span>
+                        <span>&bull;</span>
+                        <span className="font-mono-code">{new Date(h.timestamp).toLocaleString()}</span>
                         {h.relatedIssue && (
                           <>
-                            <span>â€¢</span>
+                            <span>&bull;</span>
                             <Link
                               to={`/issues/${typeof h.relatedIssue === 'object' ? h.relatedIssue._id : h.relatedIssue}`}
-                              className="text-indigo-400 hover:text-indigo-350 hover:underline font-mono font-medium"
+                              className="text-[var(--accent)] hover:underline font-mono-code font-bold uppercase"
                             >
-                              Ticket details â†—
+                              Ticket Details &rarr;
                             </Link>
                           </>
                         )}
@@ -175,64 +190,72 @@ export default function AssetDetail() {
           </div>
         </div>
 
-        {/* Right: QR Panel */}
+        {/* Right side: QR code card */}
         <div className="space-y-4">
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">QR Code</h2>
+          <div className="card p-6 flex flex-col items-center">
+            <h2 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider mb-4 self-start">QR Identification</h2>
 
             {asset.status === 'Retired' && (
-              <div className="bg-red-900/30 border border-red-800 text-red-300 rounded-lg p-2 text-xs mb-3 text-center font-bold tracking-wide">
-                ⚠ RETIRED ASSET {/* eslint-disable-line no-irregular-whitespace */}
+              <div className="bg-[var(--critical-bg)] border border-[var(--danger)] text-[var(--danger)] rounded-lg p-2 text-xs mb-3 text-center font-bold tracking-wide w-full">
+                ⚠ RETIRED ASSET
               </div>
             )}
 
-            {qrData?.qrCodeUrl ? (
-              <img
-                src={qrData.qrCodeUrl}
-                alt="Asset QR Code"
-                className="w-full rounded-lg border border-gray-700"
-              />
-            ) : (
-              <div className="w-full aspect-square bg-gray-800 rounded-lg flex items-center justify-center text-gray-500 text-sm">
-                QR not available
-              </div>
-            )}
+            <div className="bg-white p-3 rounded-xl border border-[var(--border)] w-full max-w-[240px] flex items-center justify-center shadow-inner">
+              {qrData?.qrCodeUrl ? (
+                <img
+                  src={qrData.qrCodeUrl}
+                  alt="Asset QR Verification Code"
+                  className="w-full h-auto aspect-square object-contain"
+                />
+              ) : (
+                <div className="w-full aspect-square bg-[var(--surface-raised)] rounded-lg flex items-center justify-center text-[var(--text-secondary)] text-xs">
+                  QR Code Unavailable
+                </div>
+              )}
+            </div>
 
-            <div className="mt-4 space-y-2">
+            <div className="mt-5 space-y-2.5 w-full">
               <button
                 onClick={handleDownloadQR}
                 disabled={!qrData?.qrCodeUrl}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white py-2 rounded-lg text-sm font-medium transition-colors"
+                className="btn-accent w-full py-2.5 text-xs rounded-lg flex items-center justify-center gap-1"
               >
-                â¬‡ Download QR
+                📥 Download QR Code
               </button>
+              
               <button
                 onClick={handleCopyLink}
                 disabled={!qrData?.publicUrl}
-                className="w-full bg-gray-700 hover:bg-gray-600 disabled:opacity-40 text-white py-2 rounded-lg text-sm font-medium transition-colors"
+                className="w-full py-2.5 bg-[var(--surface-raised)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text-secondary)] rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1"
               >
-                {copied ? 'âœ“ Copied!' : 'ðŸ”— Copy Public Link'}
+                {copied ? '✓ Copied Public Link' : '🔗 Copy Public URL'}
               </button>
+
               {qrData?.publicUrl && (
                 <a
                   href={qrData.publicUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded-lg text-sm font-medium text-center transition-colors"
+                  className="block w-full text-center py-2.5 bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent)] text-[var(--text-secondary)] hover:text-[var(--accent)] rounded-lg text-xs font-semibold transition-colors"
                 >
-                  â†— Open Public Page
+                  ↗ Inspect Public View
                 </a>
               )}
             </div>
 
             {qrData?.publicUrl && (
-              <p className="text-gray-500 text-xs mt-3 break-all">{qrData.publicUrl}</p>
+              <div className="bg-[var(--surface-raised)] border border-[var(--border)] p-2 rounded-lg mt-4 w-full">
+                <span className="text-[9px] text-[var(--text-secondary)] uppercase tracking-wider block font-semibold mb-0.5">Physical QR URL</span>
+                <p className="text-[10px] text-[var(--text-primary)] font-mono-code break-all select-all">{qrData.publicUrl}</p>
+              </div>
             )}
           </div>
         </div>
+
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Form Modal */}
       {showEdit && (
         <AssetForm
           asset={asset}
@@ -243,4 +266,3 @@ export default function AssetDetail() {
     </div>
   );
 }
-

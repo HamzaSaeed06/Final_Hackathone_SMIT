@@ -8,6 +8,7 @@ import PublicAsset from './pages/PublicAsset';
 import ReportIssue from './pages/ReportIssue';
 import Issues from './pages/Issues';
 import IssueDetail from './pages/IssueDetail';
+import ManageUsers from './pages/ManageUsers';
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -31,17 +32,18 @@ function App() {
         position="top-right"
         toastOptions={{
           style: {
-            background: '#1f2937',
-            color: '#f3f4f6',
-            border: '1px solid #374151',
-            borderRadius: '12px',
+            background: 'var(--surface)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border)',
+            borderRadius: '10px',
             fontSize: '13px',
+            fontFamily: 'Inter, system-ui, sans-serif',
           },
           success: {
-            iconTheme: { primary: '#6366f1', secondary: '#fff' },
+            iconTheme: { primary: 'var(--accent)', secondary: 'var(--accent-contrast)' },
           },
           error: {
-            iconTheme: { primary: '#ef4444', secondary: '#fff' },
+            iconTheme: { primary: 'var(--danger)', secondary: '#fff' },
           },
           duration: 3500,
         }}
@@ -67,6 +69,7 @@ function App() {
           <Route path="/assets/:id" element={<AssetDetail />} />
           <Route path="/issues" element={<Issues />} />
           <Route path="/issues/:id" element={<IssueDetail />} />
+          <Route path="/users" element={<ManageUsers />} />
         </Route>
       </Routes>
     </BrowserRouter>
