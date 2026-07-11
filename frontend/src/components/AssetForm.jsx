@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { assetService } from '../services/assetService';
 import toast from 'react-hot-toast';
@@ -11,7 +11,7 @@ export default function AssetForm({ asset, onClose, onSuccess }) {
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset: _reset } = useForm({
     defaultValues: isEdit ? {
       name: asset.name,
       category: asset.category,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -23,7 +23,7 @@ const PRIORITY_COLORS = {
 
 export default function Issues() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const qSearch = searchParams.get('search') || '';
   const qStatus = searchParams.get('status') || '';
   const qPriority = searchParams.get('priority') || '';

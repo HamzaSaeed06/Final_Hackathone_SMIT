@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -84,7 +84,7 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-900 pb-6">
           <div>
             <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-2">
-              🛡️ MaintainIQ Operational Control
+              ðŸ›¡ï¸ MaintainIQ Operational Control
             </h1>
             <p className="text-xs text-gray-500 font-light mt-1">
               Real-time asset telemetry, technician dispatch queues, and maintenance history pipelines.
@@ -122,7 +122,7 @@ export default function Dashboard() {
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-2 text-sm text-gray-500 hover:text-gray-300 font-bold"
               >
-                ×
+                Ã—
               </button>
             )}
           </div>
@@ -149,7 +149,7 @@ export default function Dashboard() {
               {stats?.totalAssets || 0}
             </p>
             <p className="text-[10px] text-gray-600 mt-1 font-light italic">
-              Click to view catalog →
+              Click to view catalog â†’
             </p>
           </div>
 
@@ -165,7 +165,7 @@ export default function Dashboard() {
               {stats?.openIssues || 0}
             </p>
             <p className="text-[10px] text-gray-600 mt-1 font-light italic">
-              Awaiting technician actions →
+              Awaiting technician actions â†’
             </p>
           </div>
 
@@ -189,7 +189,7 @@ export default function Dashboard() {
               {stats?.criticalIssues || 0}
             </p>
             <p className="text-[10px] text-gray-660 mt-1 font-light italic">
-              Flagged risk overrides →
+              Flagged risk overrides â†’
             </p>
           </div>
 
@@ -227,7 +227,7 @@ export default function Dashboard() {
             onClick={() => navigate('/assets')}
             className="p-6 bg-gradient-to-br from-indigo-950/20 to-gray-900/60 border border-gray-900 hover:border-indigo-900/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5"
           >
-            <h3 className="text-base font-bold text-white mb-2">📋 Asset Registry Index</h3>
+            <h3 className="text-base font-bold text-white mb-2">ðŸ“‹ Asset Registry Index</h3>
             <p className="text-xs text-gray-500 font-light leading-relaxed">
               Verify real-time conditions of all managed equipment. Perform full CRUD management operations or acquire slugs/QRs here.
             </p>
@@ -236,7 +236,7 @@ export default function Dashboard() {
             onClick={() => navigate('/issues')}
             className="p-6 bg-gradient-to-br from-purple-950/15 to-gray-900/60 border border-gray-900 hover:border-purple-900/40 rounded-2xl cursor-pointer transition-all hover:-translate-y-0.5"
           >
-            <h3 className="text-base font-bold text-white mb-2">⚡ Incident Dispatch Desk</h3>
+            <h3 className="text-base font-bold text-white mb-2">âš¡ Incident Dispatch Desk</h3>
             <p className="text-xs text-gray-500 font-light leading-relaxed">
               Update issue reports, configure ownership dispatch filters, and launch diagnostic state transitions on pending tickets.
             </p>
@@ -247,3 +247,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

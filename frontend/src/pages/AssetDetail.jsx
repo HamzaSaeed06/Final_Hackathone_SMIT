@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { assetService } from '../services/assetService';
 import AssetForm from '../components/AssetForm';
@@ -88,7 +88,7 @@ export default function AssetDetail() {
       {/* Breadcrumb */}
       <div className="text-sm text-gray-500 mb-6">
         <Link to="/assets" className="hover:text-indigo-400">Assets</Link>
-        <span className="mx-2">›</span>
+        <span className="mx-2">â€º</span>
         <span className="text-gray-300">{asset.assetCode}</span>
       </div>
 
@@ -119,10 +119,10 @@ export default function AssetDetail() {
                 ['Category', asset.category],
                 ['Location', asset.location],
                 ['Condition', asset.condition],
-                ['Assigned To', asset.assignedTechnician?.name || '—'],
-                ['Last Service', asset.lastServiceDate ? new Date(asset.lastServiceDate).toLocaleDateString() : '—'],
-                ['Next Service', asset.nextServiceDate ? new Date(asset.nextServiceDate).toLocaleDateString() : '—'],
-                ['Created By', asset.createdBy?.name || '—'],
+                ['Assigned To', asset.assignedTechnician?.name || 'â€”'],
+                ['Last Service', asset.lastServiceDate ? new Date(asset.lastServiceDate).toLocaleDateString() : 'â€”'],
+                ['Next Service', asset.nextServiceDate ? new Date(asset.nextServiceDate).toLocaleDateString() : 'â€”'],
+                ['Created By', asset.createdBy?.name || 'â€”'],
                 ['Created', new Date(asset.createdAt).toLocaleDateString()],
               ].map(([label, val]) => (
                 <div key={label}>
@@ -136,7 +136,7 @@ export default function AssetDetail() {
           {/* History Timeline */}
           <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 shadow-md">
             <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              📜 Asset Activity Timeline
+              ðŸ“œ Asset Activity Timeline
             </h2>
             {history.length === 0 ? (
               <div className="py-6 text-center border border-dashed border-gray-800 rounded-xl">
@@ -153,16 +153,16 @@ export default function AssetDetail() {
                       <p className="text-xs font-semibold text-gray-200">{h.action}</p>
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-gray-550 font-light">
                         <span className="font-medium text-gray-400">By: {h.actorName || h.actor}</span>
-                        <span>•</span>
+                        <span>â€¢</span>
                         <span>{new Date(h.timestamp).toLocaleString()}</span>
                         {h.relatedIssue && (
                           <>
-                            <span>•</span>
+                            <span>â€¢</span>
                             <Link
                               to={`/issues/${typeof h.relatedIssue === 'object' ? h.relatedIssue._id : h.relatedIssue}`}
                               className="text-indigo-400 hover:text-indigo-350 hover:underline font-mono font-medium"
                             >
-                              Ticket details ↗
+                              Ticket details â†—
                             </Link>
                           </>
                         )}
@@ -182,7 +182,7 @@ export default function AssetDetail() {
 
             {asset.status === 'Retired' && (
               <div className="bg-red-900/30 border border-red-800 text-red-300 rounded-lg p-2 text-xs mb-3 text-center font-bold tracking-wide">
-                ⚠ RETIRED ASSET
+                ⚠ RETIRED ASSET {/* eslint-disable-line no-irregular-whitespace */}
               </div>
             )}
 
@@ -204,14 +204,14 @@ export default function AssetDetail() {
                 disabled={!qrData?.qrCodeUrl}
                 className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white py-2 rounded-lg text-sm font-medium transition-colors"
               >
-                ⬇ Download QR
+                â¬‡ Download QR
               </button>
               <button
                 onClick={handleCopyLink}
                 disabled={!qrData?.publicUrl}
                 className="w-full bg-gray-700 hover:bg-gray-600 disabled:opacity-40 text-white py-2 rounded-lg text-sm font-medium transition-colors"
               >
-                {copied ? '✓ Copied!' : '🔗 Copy Public Link'}
+                {copied ? 'âœ“ Copied!' : 'ðŸ”— Copy Public Link'}
               </button>
               {qrData?.publicUrl && (
                 <a
@@ -220,7 +220,7 @@ export default function AssetDetail() {
                   rel="noopener noreferrer"
                   className="block w-full bg-gray-800 hover:bg-gray-700 text-gray-300 py-2 rounded-lg text-sm font-medium text-center transition-colors"
                 >
-                  ↗ Open Public Page
+                  â†— Open Public Page
                 </a>
               )}
             </div>
@@ -243,3 +243,4 @@ export default function AssetDetail() {
     </div>
   );
 }
+

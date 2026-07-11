@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -27,7 +27,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Brand */}
         <NavLink to="/dashboard" className="flex items-center gap-2 shrink-0">
-          <span className="text-lg">🛡️</span>
+          <span className="text-lg">ðŸ›¡ï¸</span>
           <span className="text-sm font-black text-white tracking-tight hidden sm:block">MaintainIQ</span>
         </NavLink>
 
@@ -111,3 +111,4 @@ export default function Navbar() {
     </nav>
   );
 }
+

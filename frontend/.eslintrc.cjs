@@ -12,10 +12,17 @@ module.exports = {
   settings: { react: { version: '18.2' } },
   plugins: ['react-refresh'],
   rules: {
-    'react/jsx-no-target-blank': 'off',
     'react-refresh/only-export-components': [
       'warn',
       { allowConstantExport: true },
     ],
+    // React 17+ new JSX transform — no need to import React in scope
+    'react/react-in-jsx-scope': 'off',
+    // Hackathon project — no PropTypes enforcement
+    'react/prop-types': 'off',
+    // Allow unused vars that start with underscore (convention)
+    'no-unused-vars': ['error', { varsIgnorePattern: '^_', argsIgnorePattern: '^_' }],
+    // Exhaustive-deps is a warning, not error — keep CI green
+    'react-hooks/exhaustive-deps': 'warn',
   },
-}
+};

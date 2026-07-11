@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
@@ -188,7 +188,7 @@ export default function ReportIssue() {
       <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 text-center max-w-sm w-full shadow-2xl">
           <div className="w-12 h-12 bg-green-950/40 border border-green-800 text-green-300 rounded-full flex items-center justify-center mx-auto text-xl mb-4 animate-bounce">
-            ✓
+            âœ“
           </div>
           <h2 className="text-lg font-bold text-white mb-2">Issue Reported Successfully</h2>
           <p className="text-sm text-gray-500 mb-4 font-light">The operation table has queued your incident. A technician will dispatch shortly.</p>
@@ -210,7 +210,7 @@ export default function ReportIssue() {
               onClick={() => navigate(`/public/asset/${slug}`)}
               className="text-gray-500 hover:text-gray-300 text-xs flex items-center gap-1 font-medium transition-colors"
             >
-              ← Back
+              â† Back
             </button>
           </div>
           <h1 className="text-xl font-bold text-white tracking-tight">Post Asset Incident</h1>
@@ -269,18 +269,18 @@ export default function ReportIssue() {
                     Analyzing complaint...
                   </>
                 ) : (
-                  <>🪄 Analyze with AI</>
+                  <>✨ Analyze with AI</>
                 )}
               </button>
               <span className="text-[10px] text-gray-550 italic select-none">Powered by Gemini AI</span>
             </div>
-            {aiError && <p className="text-red-400 text-[11px] mt-2 font-medium">⚠️ {aiError}</p>}
+            {aiError && <p className="text-red-400 text-[11px] mt-2 font-medium">⚠️ {aiError}</p>} {/* eslint-disable-line no-irregular-whitespace */}
           </div>
 
           {/* AI prefilled warning */}
           {aiSuggestion && aiSuggestion.recurringWarning && (
             <div className="bg-red-950/40 border border-red-900/80 text-red-300 rounded-xl p-3.5 text-xs leading-5">
-              <p className="font-bold mb-0.5">⚠️ AI SAFETY NOTICE</p>
+              <p className="font-bold mb-0.5">⚠️ AI SAFETY NOTICE</p> {/* eslint-disable-line no-irregular-whitespace */}
               <p className="text-[11px] text-gray-400 font-light">{aiSuggestion.recurringWarning}</p>
             </div>
           )}
@@ -331,7 +331,7 @@ export default function ReportIssue() {
                 {possibleCauses.map((cause, i) => (
                   <span key={i} className="bg-gray-800 text-gray-300 border border-gray-700 rounded-md px-2 py-0.5 text-xs flex items-center gap-1 leading-normal select-none">
                     {cause}
-                    <button type="button" onClick={() => removeCause(i)} className="text-gray-500 hover:text-red-400 font-bold">×</button>
+                    <button type="button" onClick={() => removeCause(i)} className="text-gray-500 hover:text-red-400 font-bold">Ã—</button>
                   </span>
                 ))}
                 {possibleCauses.length === 0 && <span className="text-xs text-gray-600 italic">No causes suggested.</span>}
@@ -357,7 +357,7 @@ export default function ReportIssue() {
                 {initialChecks.map((check, i) => (
                   <div key={i} className="bg-gray-800/50 border border-gray-750 rounded-lg p-2 text-xs flex justify-between items-center gap-2 select-none">
                     <span className="text-gray-300 italic font-light">{check}</span>
-                    <button type="button" onClick={() => removeCheck(i)} className="text-gray-505 hover:text-red-400 font-semibold px-1">×</button>
+                    <button type="button" onClick={() => removeCheck(i)} className="text-gray-505 hover:text-red-400 font-semibold px-1">Ã—</button>
                   </div>
                 ))}
                 {initialChecks.length === 0 && <span className="text-xs text-gray-600 italic">No initial checks suggested.</span>}
@@ -389,7 +389,7 @@ export default function ReportIssue() {
                 className="absolute inset-0 opacity-0 w-full cursor-pointer"
               />
               <div className="text-center text-xs text-gray-400 font-medium">
-                <span>📸 {evidenceName || 'Tap to capture / select photo'}</span>
+                <span>ðŸ“¸ {evidenceName || 'Tap to capture / select photo'}</span>
               </div>
             </div>
           </div>
@@ -408,3 +408,4 @@ export default function ReportIssue() {
     </div>
   );
 }
+

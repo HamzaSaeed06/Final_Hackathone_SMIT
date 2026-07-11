@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { assetService } from '../services/assetService';
 import AssetForm from '../components/AssetForm';
@@ -17,7 +17,7 @@ const STATUS_COLORS = {
 
 export default function Assets() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const qSearch = searchParams.get('search') || '';
   const qStatus = searchParams.get('status') || '';
 

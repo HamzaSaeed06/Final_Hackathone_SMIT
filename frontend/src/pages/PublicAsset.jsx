@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -55,7 +55,7 @@ export default function PublicAsset() {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-sm w-full text-center shadow-2xl">
-          <span className="text-4xl">🔍</span>
+          <span className="text-4xl">ðŸ”</span>
           <h2 className="text-lg font-semibold text-white mt-3 mb-2">{error}</h2>
           <p className="text-sm text-gray-500 mb-6 font-light">The asset QR code or link matches an invalid slug.</p>
           <div className="bg-gray-805/50 border border-gray-700 rounded-lg p-2 text-xs font-mono text-gray-405 select-all select-none">
@@ -76,7 +76,7 @@ export default function PublicAsset() {
         {/* Banner for retired assets */}
         {asset.status === 'Retired' && (
           <div className="bg-red-900/40 border-b border-red-800 text-red-200 px-4 py-3 text-center text-sm font-bold tracking-wide flex items-center justify-center gap-2">
-            <span>⚠</span> RETIRED ASSET (OUT OF SERVICE FOREVER)
+            <span aria-label="warning">⚠</span> RETIRED ASSET (OUT OF SERVICE FOREVER) {/* eslint-disable-line no-irregular-whitespace */}
           </div>
         )}
 
@@ -169,3 +169,4 @@ export default function PublicAsset() {
     </div>
   );
 }
+

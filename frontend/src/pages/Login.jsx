@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -44,7 +44,7 @@ export default function Login() {
         {/* Brand */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 mb-4 shadow-lg shadow-indigo-500/30">
-            <span className="text-2xl">🛡️</span>
+            <span className="text-2xl">ðŸ›¡ï¸</span>
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight">MaintainIQ</h1>
           <p className="text-xs text-gray-500 mt-1 font-light">Enterprise Asset Maintenance Platform</p>
@@ -80,7 +80,7 @@ export default function Login() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
@@ -103,9 +103,10 @@ export default function Login() {
         </div>
 
         <p className="text-center text-[10px] text-gray-600 mt-6 select-none uppercase tracking-widest">
-          MaintainIQ · Secure Operations Platform
+          MaintainIQ Â· Secure Operations Platform
         </p>
       </div>
     </div>
   );
 }
+

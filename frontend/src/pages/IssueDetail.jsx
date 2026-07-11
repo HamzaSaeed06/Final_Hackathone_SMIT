@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -41,7 +41,7 @@ export default function IssueDetail() {
   const [error, setError] = useState('');
   
   // Auth roles
-  const [currentUser, setCurrentUser] = useState(null);
+  const [_currentUser, setCurrentUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAssignedTech, setIsAssignedTech] = useState(false);
 
@@ -335,7 +335,7 @@ export default function IssueDetail() {
           <div className="space-y-2 select-text">
             <h3 className="text-xs text-gray-500 uppercase tracking-wider font-bold">Complaint Details</h3>
             <p className="bg-gray-950/40 p-4 border border-gray-900 rounded-xl text-xs text-gray-300 font-light leading-6 italic">
-              "{issue.description}"
+              &ldquo;{issue.description}&rdquo;
             </p>
           </div>
 
@@ -520,7 +520,7 @@ export default function IssueDetail() {
             {/* Quick Helper text reminding of log requirement */}
             {(issue.status === 'Maintenance In Progress' || issue.status === 'Waiting for Parts') && (
               <p className="text-[10px] text-gray-500 font-light mt-1 select-none">
-                * Note: The issue cannot transition to "Resolved" status until at least one Maintenance Log has been documented.
+                * Note: The issue cannot transition to &ldquo;Resolved&rdquo; status until at least one Maintenance Log has been documented.
               </p>
             )}
           </div>
@@ -552,7 +552,7 @@ export default function IssueDetail() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-3 border-t border-gray-800/40">
                     <div>
                       <span className="text-gray-550 uppercase tracking-wider block font-bold text-[9px] mb-1">Inspection Findings</span>
-                      <p className="text-gray-300 font-light italic leading-5">"{log.inspectionNotes}"</p>
+                      <p className="text-gray-300 font-light italic leading-5">&ldquo;{log.inspectionNotes}&rdquo;</p>
                     </div>
                     <div>
                       <span className="text-gray-550 uppercase tracking-wider block font-bold text-[9px] mb-1">Work Performed</span>
@@ -713,7 +713,7 @@ export default function IssueDetail() {
                     className="w-full bg-gray-850 border border-indigo-950 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
                   />
                   <span className="text-[10px] text-gray-550 select-none italic mt-1 block">
-                    * By resolving, the status of this ticket will immediately change to "Resolved". The linked asset's status will reset to "Operational" and scheduled next service dates will be validated and updated.
+                    * By resolving, the status of this ticket will immediately change to &ldquo;Resolved&rdquo;. The linked asset&apos;s status will reset to &ldquo;Operational&rdquo; and scheduled next service dates will be validated and updated.
                   </span>
                 </div>
 
