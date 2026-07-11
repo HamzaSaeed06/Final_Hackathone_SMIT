@@ -8,6 +8,7 @@ const ApiError = require('./utils/apiError');
 const ApiResponse = require('./utils/apiResponse');
 const authRoutes = require('./routes/auth.routes');
 const assetRoutes = require('./routes/asset.routes');
+const publicRoutes = require('./routes/public.routes');
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/assets', assetRoutes);
+app.use('/api/public', publicRoutes);
 
 // Health Check Endpoint
 app.get('/health', (req, res) => {

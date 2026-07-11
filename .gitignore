@@ -57,3 +57,4 @@ coverage/
 # Uploads directory contents (ignore uploaded images/files, but track the folder)
 backend/uploads/*
 !backend/uploads/.gitkeep
+docs/
