@@ -103,7 +103,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-[10px] text-gray-600 mt-6 select-none uppercase tracking-widest">
-          MaintainIQ Â· Secure Operations Platform
+          MaintainIQ &middot; Secure Operations Platform
         </p>
       </div>
     </div>
