@@ -26,7 +26,13 @@ const getIssues = asyncHandler(async (req, res, next) => {
   const { status, priority, technician, asset, search } = req.query;
   const filter = {};
 
-  if (status) filter.status = status;
+  if (status) {
+    if (status.includes(',')) {
+      filter.status = { $in: status.split(',') };
+    } else {
+      filter.status = status;
+    }
+  }
   if (priority) filter.priority = priority;
   if (technician) filter.assignedTechnician = technician;
   if (asset) filter.asset = asset;
@@ -168,6 +174,9 @@ const updateIssueStatus = asyncHandler(async (req, res, next) => {
   // === WRITES (only after all validation passes) ===
 
   issue.status = status;
+  if (status === 'Resolved') {
+    issue.resolvedAt = new Date();
+  }
   await issue.save();
 
   // Write AssetHistory entry for the issue status change

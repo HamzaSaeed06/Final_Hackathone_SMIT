@@ -1,6 +1,8 @@
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const Asset = require('../models/Asset');
 const AssetHistory = require('../models/AssetHistory');
+const User = require('../models/User');
 const ApiError = require('../utils/apiError');
 const ApiResponse = require('../utils/apiResponse');
 const asyncHandler = require('../utils/asyncHandler');
@@ -198,7 +200,29 @@ const getAssetHistory = asyncHandler(async (req, res, next) => {
     .sort({ timestamp: -1 })
     .limit(50);
 
-  res.status(200).json(new ApiResponse(200, history, 'Asset history retrieved successfully'));
+  // Retrieve user names for actor IDs
+  const userIds = history
+    .map(h => h.actor)
+    .filter(a => mongoose.Types.ObjectId.isValid(a));
+
+  const uniqueUserIds = [...new Set(userIds)];
+  const users = await User.find({ _id: { $in: uniqueUserIds } }).select('name email');
+  const userMap = users.reduce((acc, user) => {
+    acc[user._id.toString()] = user.name;
+    return acc;
+  }, {});
+
+  const populatedHistory = history.map(h => {
+    const obj = h.toObject();
+    if (userMap[obj.actor]) {
+      obj.actorName = userMap[obj.actor];
+    } else {
+      obj.actorName = obj.actor; // "Public" or other string identifiers
+    }
+    return obj;
+  });
+
+  res.status(200).json(new ApiResponse(200, populatedHistory, 'Asset history retrieved successfully'));
 });
 
 module.exports = {

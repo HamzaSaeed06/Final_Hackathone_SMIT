@@ -114,18 +114,39 @@ export default function AssetDetail() {
           </div>
 
           {/* History Timeline */}
-          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">History</h2>
+          <div className="bg-gray-900 rounded-xl border border-gray-800 p-6 shadow-md">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              📜 Asset Activity Timeline
+            </h2>
             {history.length === 0 ? (
-              <p className="text-gray-500 text-sm">No history yet.</p>
+              <div className="py-6 text-center border border-dashed border-gray-800 rounded-xl">
+                <p className="text-gray-550 text-xs">No activity logs recorded for this asset yet.</p>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="relative border-l border-gray-800 pl-4 ml-2 space-y-5">
                 {history.map((h, i) => (
-                  <div key={i} className="flex gap-3 text-sm">
-                    <div className="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
-                    <div>
-                      <p className="text-gray-200">{h.action}</p>
-                      <p className="text-gray-500 text-xs">{new Date(h.timestamp).toLocaleString()}</p>
+                  <div key={i} className="relative">
+                    {/* Timeline dot */}
+                    <div className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-gray-950 font-bold" />
+                    
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-gray-200">{h.action}</p>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-gray-550 font-light">
+                        <span className="font-medium text-gray-400">By: {h.actorName || h.actor}</span>
+                        <span>•</span>
+                        <span>{new Date(h.timestamp).toLocaleString()}</span>
+                        {h.relatedIssue && (
+                          <>
+                            <span>•</span>
+                            <Link
+                              to={`/issues/${typeof h.relatedIssue === 'object' ? h.relatedIssue._id : h.relatedIssue}`}
+                              className="text-indigo-400 hover:text-indigo-350 hover:underline font-mono font-medium"
+                            >
+                              Ticket details ↗
+                            </Link>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

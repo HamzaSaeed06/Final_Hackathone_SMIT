@@ -294,8 +294,8 @@ Closed → cannot edit unless Reopened first
 
 ## 15. Progress Tracker (update as you go)
 
-**Current Hour:** 5
-**Completed:** auth + RBAC, asset CRUD + QR, public asset page, issue reporting, AI triage, assignment flow, status state machine enforced server-side, maintenance logging, Cloudinary evidence, asset status sync
+**Current Hour:** 6
+**Completed:** auth + RBAC, asset CRUD + QR, public asset page, issue reporting, AI triage, assignment flow, status state machine, maintenance logging, Cloudinary uploads, asset status sync, asset activity history timeline, dashboard KPI metrics telemetry, global search + filter deep wiring end-to-end
 **In Progress:** —
 **Blocked/Issue:** —
-**Next Prompt for Agent:** Prompt 07 — Asset History + Dashboard
+**Next Prompt for Agent:** Prompt 08 — Frontend Polish + Responsive

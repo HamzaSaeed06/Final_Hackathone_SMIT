@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 
 const STATUS_COLORS = {
@@ -22,20 +22,31 @@ const PRIORITY_COLORS = {
 
 export default function Issues() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const qSearch = searchParams.get('search') || '';
+  const qStatus = searchParams.get('status') || '';
+  const qPriority = searchParams.get('priority') || '';
+
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Filters
-  const [status, setStatus] = useState('');
-  const [priority, setPriority] = useState('');
-  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState(qStatus);
+  const [priority, setPriority] = useState(qPriority);
+  const [search, setSearch] = useState(qSearch);
   
   // Technician lists for admin assignment filter
   const [technicians, setTechnicians] = useState([]);
   const [selectedTech, setSelectedTech] = useState('');
 
   const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    setStatus(qStatus);
+    setPriority(qPriority);
+    setSearch(qSearch);
+  }, [qStatus, qPriority, qSearch]);
 
   useEffect(() => {
     // Check role

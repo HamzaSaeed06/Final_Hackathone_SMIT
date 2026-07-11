@@ -78,7 +78,11 @@ const issueSchema = new mongoose.Schema({
   },
   evidenceUrls: [{
     type: String,
-  }]
+  }],
+  resolvedAt: {
+    type: Date,
+    default: null,
+  }
 }, {
   timestamps: true,
 });

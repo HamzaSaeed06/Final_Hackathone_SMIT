@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { assetService } from '../services/assetService';
 import AssetForm from '../components/AssetForm';
 
@@ -15,13 +15,22 @@ const STATUS_COLORS = {
 };
 
 export default function Assets() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const qSearch = searchParams.get('search') || '';
+  const qStatus = searchParams.get('status') || '';
+
   const [assets, setAssets] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, pages: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useState(qSearch);
+  const [statusFilter, setStatusFilter] = useState(qStatus);
   const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    setSearch(qSearch);
+    setStatusFilter(qStatus);
+  }, [qSearch, qStatus]);
 
   const fetchAssets = useCallback(async (page = 1) => {
     setLoading(true);
