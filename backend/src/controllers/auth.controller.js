@@ -75,8 +75,15 @@ const me = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, req.user, 'Current user loaded successfully'));
 });
 
+// List technicians (admin only)
+const getTechnicians = asyncHandler(async (req, res) => {
+  const technicians = await User.find({ role: 'technician' }).select('name email');
+  res.status(200).json(new ApiResponse(200, technicians, 'Technicians retrieved successfully'));
+});
+
 module.exports = {
   register,
   login,
   me,
+  getTechnicians,
 };
