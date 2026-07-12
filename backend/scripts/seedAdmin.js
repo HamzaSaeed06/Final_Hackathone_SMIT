@@ -19,7 +19,9 @@ const seedAdmin = async () => {
     // Check if admin already exists
     const existingAdmin = await User.findOne({ email });
     if (existingAdmin) {
-      console.log(`Admin user with email ${email} already exists. Skipping seed.`);
+      existingAdmin.password = password;
+      await existingAdmin.save();
+      console.log(`Admin user with email ${email} already exists. Updated/reset password successfully.`);
       process.exit(0);
     }
 
