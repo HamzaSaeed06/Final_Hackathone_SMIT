@@ -31,12 +31,17 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:80',
 ];
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (e.g. mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
+    // Allow any vercel.app subdomain (both frontend and preview deployments)
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    // Allow explicitly listed origins
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error(`CORS policy: origin ${origin} is not allowed`));
+    // Block all others (return false, not an error, to avoid 500 crashes)
+    callback(null, false);
   },
   credentials: true,
 }));
