@@ -11,8 +11,12 @@ const assetRoutes = require('./routes/asset.routes');
 const publicRoutes = require('./routes/public.routes');
 const issueRoutes = require('./routes/issue.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const connectDB = require('./config/db');
 
 const app = express();
+
+// Connect to MongoDB Database
+connectDB();
 
 // Set security HTTP headers
 app.use(helmet());
