@@ -131,7 +131,7 @@ const analyzeComplaintWithAI = async (assetContext, complaint) => {
   }
 
   const prompt = generateTriagePrompt(assetContext, complaint);
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`;
 
   // Timebox calling to ~10 seconds
   const controller = new AbortController();
