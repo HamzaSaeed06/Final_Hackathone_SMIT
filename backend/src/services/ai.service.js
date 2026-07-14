@@ -131,62 +131,76 @@ const analyzeComplaintWithAI = async (assetContext, complaint) => {
   }
 
   const prompt = generateTriagePrompt(assetContext, complaint);
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
+  
+  // Try multiple model versions in order of preference
+  const models = [
+    'gemini-1.5-pro',
+    'gemini-1.5-flash',
+    'gemini-pro',
+    'gemini-1.0-pro'
+  ];
 
-  // Timebox calling to ~10 seconds
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 9500); // Trigger abort slightly before 10s to return custom error
+  let lastError = null;
+  
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      console.log(`[AI Service] Trying model: ${model}`);
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }],
-        generationConfig: {
-          responseMimeType: 'application/json'
-        }
-      }),
-      signal: controller.signal
-    });
+      // Timebox calling to ~10 seconds
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 9500);
 
-    clearTimeout(timeoutId);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }],
+          generationConfig: {
+            responseMimeType: 'application/json'
+          }
+        }),
+        signal: controller.signal
+      });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Gemini status ${res.status}: ${errText}`);
-    }
+      clearTimeout(timeoutId);
 
-    const data = await res.json();
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawText) {
-      throw new Error('Empty response content received from Gemini model');
-    }
-
-    // Try-parse the parsed response
-    const parsed = JSON.parse(rawText.trim());
-
-    // Validate schema compliance
-    const required = ['title', 'category', 'priority', 'possibleCauses', 'initialChecks', 'recurringWarning'];
-    for (const key of required) {
-      if (!(key in parsed)) {
-        throw new Error(`Invalid schema: missing field "${key}" from AI response`);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Gemini status ${res.status}: ${errText}`);
       }
-    }
 
-    return parsed;
-  } catch (err) {
-    clearTimeout(timeoutId);
-    console.error('[AI Service Error]:', err.message);
+      const data = await res.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) {
+        throw new Error('Empty response content received from Gemini model');
+      }
 
-    if (err.name === 'AbortError') {
-      throw new Error('AI analysis timed out. Please continue manual entry.');
+      // Try-parse the parsed response
+      const parsed = JSON.parse(rawText.trim());
+
+      // Validate schema compliance
+      const required = ['title', 'category', 'priority', 'possibleCauses', 'initialChecks', 'recurringWarning'];
+      for (const key of required) {
+        if (!(key in parsed)) {
+          throw new Error(`Invalid schema: missing field "${key}" from AI response`);
+        }
+      }
+
+      console.log(`[AI Service] Successfully used model: ${model}`);
+      return parsed;
+    } catch (err) {
+      lastError = err;
+      console.warn(`[AI Service] Model ${model} failed:`, err.message);
+      continue; // Try next model
     }
-    // For other connection errors, let it bubble up, or fallback
-    throw err;
   }
+
+  // All models failed, use fallback
+  console.error('[AI Service] All Gemini models failed. Using mock fallback.');
+  return getMockTriageResult(assetContext, complaint);
 };
 
 module.exports = {
